@@ -5,7 +5,7 @@
  * 词表是独立封闭的，这里逐条钉住"算"与"不算"的边界 —— 尤其是
  * 「我发了个红包」这种普通聊天**不能**被判成红包消息（误判一次，之后真假就分不清了）。
  */
-import { GRAB_UNAVAILABLE_REASON, describeRedPacket, detectRedPacket } from '../lib/redpacket.js'
+import { GRAB_UNAVAILABLE_REASON, describeRedPacket, describeSuspiciousRedPacket, detectRedPacket } from '../lib/redpacket.js'
 
 let passed = 0
 let failed = 0
@@ -18,12 +18,18 @@ function check(name, ok, extra = '') {
 const card = { app: 'com.tencent.mobileqq.redpacket', prompt: '[QQ红包]恭喜发财', title: '恭喜发财', desc: '', url: '' }
 const byCard = detectRedPacket({ card, text: '' })
 check('红包卡片（app=…redpacket）被认出', byCard.isRedPacket === true && byCard.hit === 'card', JSON.stringify(byCard))
+check('★卡片证据 ⇒ trusted=true', byCard.trusted === true, String(byCard.trusted))
 check('卡片文案进 title', byCard.title === '恭喜发财', byCard.title)
 check('普通红包的类型是「红包」', byCard.kind === '红包', byCard.kind)
 
-// ---- 2) 只有文本：必须带方括号才算 ----
+// ---- 2) 只有文本：必须带方括号才算，而且**不算真红包**（2026-11-12）----
 const byText = detectRedPacket({ text: '[QQ红包]恭喜发财，大吉大利' })
 check('文本强标记 [QQ红包] 被认出', byText.isRedPacket === true && byText.hit === 'text', JSON.stringify(byText))
+/**
+ * 🔴 这条是本轮新加的护栏：文本框写着 `[QQ红包]` 但没有卡片 ⇒ 不能当"真红包"。
+ * 它是诈骗消息最常用的伪装（点开是外链/让你转账），机器人绝不能说"有红包"。
+ */
+check('★只有文本前缀 ⇒ trusted=false（疑似冒充）', byText.trusted === false, String(byText.trusted))
 check('裸说「红包」不算红包消息', detectRedPacket({ text: '我发了个红包，你去看看' }).isRedPacket === false)
 check('「红包我不抢」不算', detectRedPacket({ text: '红包我不抢，你们先' }).isRedPacket === false)
 check('无关文本不算', detectRedPacket({ text: '今天天气不错' }).isRedPacket === false)
@@ -31,6 +37,7 @@ check('无关文本不算', detectRedPacket({ text: '今天天气不错' }).isRe
 // ---- 3) 原始 JSON 兜底：卡片归一化会丢字段，标记可能只在 meta 里 ----
 const rawOnly = detectRedPacket({ raw: '{"app":"com.tencent.miniapp_01","meta":{"detail_1":{"title":"微信红包","qqurl":"https://h5.qzone.qq.com/redpacket/x"}}}' })
 check('标记只在原始 JSON 里也能认出', rawOnly.isRedPacket === true && rawOnly.hit === 'card', JSON.stringify(rawOnly))
+check('★原始 JSON 里有卡片标记 ⇒ trusted=true', rawOnly.trusted === true, String(rawOnly.trusted))
 
 // ---- 4) 类型分辨 ----
 check('口令红包', detectRedPacket({ text: '[口令红包]恭喜发财', card: null }).kind === '口令红包')
@@ -50,6 +57,15 @@ for (const bad of [undefined, null, {}, { card: null, text: '' }, { text: null, 
 check('describeRedPacket 带类型与标题', describeRedPacket(byCard) === '红包「恭喜发财」', describeRedPacket(byCard))
 check('describeRedPacket 没标题就只说类型', describeRedPacket(byText) === '红包', describeRedPacket(byText))
 check('describeRedPacket 对非红包返回空串', describeRedPacket({ isRedPacket: false }) === '')
+
+/**
+ * 疑似冒充的文案（2026-11-12）：
+ * ★ 绝不能出现「有红包」三个字 —— 机器人说"有"，就已经替假红包做了担保。
+ */
+const fake = describeSuspiciousRedPacket(byText)
+check('★疑似冒充：文案说"冒充"、不说"有红包"', fake.includes('冒充') && !fake.includes('有红包'), fake)
+check('真红包不产生"疑似"文案', describeSuspiciousRedPacket(byCard) === '', describeSuspiciousRedPacket(byCard))
+check('非红包不产生"疑似"文案', describeSuspiciousRedPacket({ isRedPacket: false }) === '')
 /**
  * 文案红线：可以写"发现"，**绝不能写"已领取/已抢"** —— 桥根本没有这个能力，
  * 写了就是骗人（也会让后续排查以为功能存在）。
