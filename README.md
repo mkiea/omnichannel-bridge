@@ -717,6 +717,92 @@ profile 的 `cordis.patch.yml` 覆盖 `id: dsh-qq-onebot-bridge` 的 config（�
 |---|---|---|
 | `sendJitterRatio` | `0.5` | Random extra gap added on top of sendIntervalMs, as a ratio of it (default 0.5 = each gap is 400-600ms instead of exactly 400ms). Fixed-interval writing is t... |
 
+
+### 完整配置参考（自动生成，2026-11-05）
+
+> 上表只放"日常会动"的项。**这一节是 schema 里的全部剩余项**，默认值从代码读，
+> 说明保留 schema 原文（英文）—— 不做机器翻译，避免翻出"看着通顺但含义漂移"的中文。
+>
+> 由 `tools/gen-config-reference.mjs` 生成；改 schema 后重跑即可，别手改这一节。
+> 示例里的号码一律用占位（`100000001` / `2000000001`），与真实账号无关。
+
+#### 语音（TTS / STT 补充）（5 项）
+
+| 键 | 默认 | 说明（schema 原文） |
+|---|---|---|
+| `ttsRewriteEnabled` | `false` | Rewrite the reply into one speakable paragraph before TTS (voice only — the text message stays unchanged). Uses a local OpenAI-compatible model; failures fal... |
+| `ttsRewriteBaseUrl` | `http://127.0.0.1:11434/v1` | OpenAI-compatible base URL for the TTS rewrite model (default: local Ollama). |
+| `ttsRewriteModel` | `qwen2.5:3b` | Model name for the TTS rewrite step. qwen2.5:3b was the smallest that actually merged the sentences without adding new information. |
+| `ttsRewritePrompt` | `` | System prompt for the rewrite step. Empty = built-in default ("merge the short sentences into one line, keep the meaning, add commas and spoken particles, ad... |
+| `ttsRewriteTimeoutMs` | `8000` | Timeout for the rewrite call. On timeout the original text is spoken — never skip the voice entirely. |
+
+
+### 完整配置参考（自动生成，2026-11-05）
+
+> 上表只放"日常会动"的项。**这一节是 schema 里的全部剩余项**，默认值从代码读，
+> 说明保留 schema 原文（英文）—— 不做机器翻译，避免翻出"看着通顺但含义漂移"的中文。
+>
+> 由 `tools/gen-config-reference.mjs` 生成；改 schema 后重跑即可，别手改这一节。
+> 示例里的号码一律用占位（`100000001` / `2000000001`），与真实账号无关。
+
+#### 语音（TTS / STT 补充）（4 项）
+
+| 键 | 默认 | 说明（schema 原文） |
+|---|---|---|
+| `ttsCosyUrl` | `http://127.0.0.1:8999` | CosyVoice2 服务地址（ttsProvider=cosyvoice 时使用）。 |
+| `ttsCosyRefAudio` | `` | 参考音频绝对路径（定音色）。留空则用服务端默认。 |
+| `ttsCosyRefText` | `` | 参考音频对应的文字（越准音色越稳）。 |
+| `ttsCosyInstruct` | `` | 固定语气指令（如「用撒娇的语气说」）。留空则按本轮情绪自动选。 |
+
+
+### 完整配置参考（自动生成，2026-11-05）
+
+> 上表只放"日常会动"的项。**这一节是 schema 里的全部剩余项**，默认值从代码读，
+> 说明保留 schema 原文（英文）—— 不做机器翻译，避免翻出"看着通顺但含义漂移"的中文。
+>
+> 由 `tools/gen-config-reference.mjs` 生成；改 schema 后重跑即可，别手改这一节。
+> 示例里的号码一律用占位（`100000001` / `2000000001`），与真实账号无关。
+
+#### 语音（TTS / STT 补充）（3 项）
+
+| 键 | 默认 | 说明（schema 原文） |
+|---|---|---|
+| `ttsQwenUrl` | `http://127.0.0.1:9001` | Qwen3-TTS Base 服务地址（ttsProvider=qwen 时使用）。 |
+| `ttsQwenRefAudio` | `` | 参考音频绝对路径（定音色）。留空用服务端默认。 |
+| `ttsQwenRefText` | `` | 参考音频逐字文本——**必须与音频内容一致**，不一致会让发音变成听不懂的话。 |
+
+
+### 完整配置参考（自动生成，2026-11-05）
+
+> 上表只放"日常会动"的项。**这一节是 schema 里的全部剩余项**，默认值从代码读，
+> 说明保留 schema 原文（英文）—— 不做机器翻译，避免翻出"看着通顺但含义漂移"的中文。
+>
+> 由 `tools/gen-config-reference.mjs` 生成；改 schema 后重跑即可，别手改这一节。
+> 示例里的号码一律用占位（`100000001` / `2000000001`），与真实账号无关。
+
+#### 语音（TTS / STT 补充）（2 项）
+
+| 键 | 默认 | 说明（schema 原文） |
+|---|---|---|
+| `ttsStallNotice` | `true` | 本地慢 TTS（qwen/cosyvoice）合成前先发一句"等一下，我给你录"，用来解释 20–30 秒的等待。 |
+| `ttsStallNoticeText` | `等一下哦，软软给你录一段～` | 那句预告的文案。 |
+
+
+### 完整配置参考（自动生成，2026-11-05）
+
+> 上表只放"日常会动"的项。**这一节是 schema 里的全部剩余项**，默认值从代码读，
+> 说明保留 schema 原文（英文）—— 不做机器翻译，避免翻出"看着通顺但含义漂移"的中文。
+>
+> 由 `tools/gen-config-reference.mjs` 生成；改 schema 后重跑即可，别手改这一节。
+> 示例里的号码一律用占位（`100000001` / `2000000001`），与真实账号无关。
+
+#### 其他（内部 / 实验性）（2 项）
+
+| 键 | 默认 | 说明（schema 原文） |
+|---|---|---|
+| `circuitFailThreshold` | `3` | Open the turn breaker after this many consecutive failed turns (default 3). While open, every followup is refused without calling the model, the proactive ch... |
+| `circuitCooldownSeconds` | `600` | How long the breaker stays open before letting exactly one probe turn through (default 600 = 10 min). A successful probe closes it (admins are told); a faile... |
+
 ## 用户侧（OneBot 实现）配置
 
 以 NapCat 为例：OneBot11 配置里把 WebSocket 客户端地址填成：
