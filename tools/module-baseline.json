@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-15T08:34:38.096Z",
+  "updatedAt": "2026-11-15T09:50:20.345Z",
   "limits": {
     "lines": 800,
     "bytes": 163840,
@@ -16,8 +16,8 @@
       "maxClassMethods": 58
     },
     "lib/bridge.js": {
-      "lines": 14361,
-      "bytes": 792419,
+      "lines": 14241,
+      "bytes": 784611,
       "maxFunctionLines": 1043,
       "maxFunctionName": "async #onQqMessageInner",
       "maxClassMethods": 297

@@ -75,11 +75,15 @@ check('非数组 / 含空事件也不抛',
 
 // ---- 命令接线：不引用时用"本会话最近一条"，引用时用 messageId ----
 const bridgeSource = readFileSync(new URL('../lib/bridge.js', import.meta.url), 'utf8')
+// 帮助文案 2026-11-15 迁到 lib/help.js（模块化第 1 批）：
+// 「帮助里能看到 /为什么」这条判据不变，只是要去文案所在的地方找。
+const helpSource = readFileSync(new URL('../lib/help.js', import.meta.url), 'utf8')
 check('★桥里真的接了 `/为什么` 命令（正则 + 处理器 + 帮助里能看到）',
   /parseWhyIntent\(text\)/.test(bridgeSource)
   && bridgeSource.includes('async #handleWhy(message, arg)')
   && bridgeSource.includes('命令 /为什么')
-  && bridgeSource.includes('/为什么 查某条消息为什么没回'))
+  && (bridgeSource.includes('/为什么 查某条消息为什么没回')
+    || helpSource.includes('/为什么 查某条消息为什么没回')))
 check('★两种定位都在：引用的 messageId 索引 + 本会话最近一条',
   bridgeSource.includes('this.traceIndex.get(String(quoted))')
   && bridgeSource.includes('this.lastTraceOfChat.get(chatKey)'))

@@ -30,6 +30,59 @@ lib/panel.js           1,340
 | 313 | L2259 | `#execAdminCommand` |
 | 311 | L8841 | `#resolveQuoted` |
 
+### 1.5 结构诊断（2026-11-15 实测，`node tools/module-tree.mjs`）
+
+```
+lib  70 个文件 / 35,126 行
+
+L0   58 个   叶子：只被依赖，自己不 import 项目内模块
+L1    9 个
+L2    1 个   cardlook
+L3    1 个   bridge.js  14,241 行  ←1 →59   ⚠ 枢纽
+L4    1 个   index.js（入口）
+
+环（SCC size > 1）：无 ✓
+```
+
+**怎么读这棵树**：L0 有 58 个、L3 只有 1 个 —— 这不是"分层"，是**一颗螺丝钉带着 58 个零件**。
+真正的分层每一步都该有若干文件、越往上越少，而不是"底层 58 → 顶上 1"。
+
+**三条可测判据**（不是审美）：
+
+| 判据 | 现在 | 目标 | 依据 |
+|---|---|---|---|
+| 无环 | ✅ 0 个环 | 保持 0 | `2406.16487`：拆完的子模块必须 acyclic |
+| 单文件 fan-out | **59** | ≤10 | 枢纽 = 改一处动一片（`2411.01012` 的静态版本） |
+| 层形状 | L0=58 / L1=9 / L2=1 / L3=1 | 每层都有若干文件，最多 2 层只有 1 个 | 见上 |
+
+**目标结构（收敛两级，不是继续平铺）**
+
+```
+index.js（根，装配）
+└─ bridge/core.js         干：≤800 行、fan-out ≤8
+   ├─ inbound.js          收消息 → 闸门 → 路由
+   ├─ turn.js             回合 + watchdog + 熔断接线
+   ├─ reply.js            出站
+   ├─ session.js          会话生命周期
+   ├─ commands/*.js       admin / ops / help
+   └─ media/*.js          video / voice / image
+（枝：lib/*.js 40+，谁都不 import bridge —— 闸门看守）
+```
+
+**第一批迁移实测（`#handleHelp` → `lib/help.js`，2026-11-15）**
+
+| 指标 | 迁移前 | 迁移后 | 说明 |
+|---|---|---|---|
+| `bridge.js` 行数 | 14,361 | **14,241** | −120 |
+| `lib` 文件数 | 69 | 70 | +1（`help.js`，169 行） |
+| `bridge` fan-out | 58 | **59** | **+1** |
+| 环 | 0 | 0 | 不变 |
+
+⚠️ **fan-out 涨 1 是正常的，别拿它判单批成败**：桥还是"什么都自己调"，
+多一个模块就多一条边。真正的下降要等 `bridge.js` 自己被拆（第 4–8 批）——
+那时子模块各自带自己的边，`core.js` 只剩 6–8 条。
+所以单批的验收看**桥的行数**与**它内部的方法块**，fan-out 是终局指标。
+
 ## 2. 依据
 
 ### 2.1 已过产线（`tools/lit_hardgate.py`，三轮共 **25/25 PASS**，全文在 `调研/fulltext/`）
@@ -166,7 +219,7 @@ lib/
 
 | # | 簇 | 现状 | 目标 | 风险 | 前置 |
 |---|---|---|---:|---|
-| 1 | 帮助文本 | `#handleHelp` 142 行 | `bridge/commands/help.js` | 低 | 无 |
+| 1 | **✅ 已完成** 帮助文本 | `#handleHelp` 141 行 | → **`lib/help.js`**（181 行） | 低 | 无（2026-11-15） |
 | 2 | 运维指令 | `#handleOpsCommand` 735 行 | `bridge/commands/ops.js` | 中 | 端口：`reply / callAction / config / trace` |
 | 3 | 管理指令 | 313 + 128 行 | `bridge/commands/admin.js` | 中 | 同上 |
 | 4 | 工具注册 | `#registerMediaTools` 200 + `#registerQueryTools` 121 | `bridge/tools-registry.js` | 中 | 端口：`defineTool` 上下文 |
@@ -175,11 +228,15 @@ lib/
 | 7 | 会话 | `#openSession` 130 + `#installSession` 144 + fork | `bridge/session.js` | 高 | 同 6 |
 | 8 | 入站 | `#onQqMessageInner` 1,045 | `bridge/inbound.js` | 极高 | 前 1–7 都完成 |
 
-**每批的验收（三条都要）**
+**每批的验收（四条都要）**
 
 1. `node tools/module-gate.mjs --ratchet` 后 `lib/bridge.js` 的 baseline **变小**；
-2. `node tools/test-all.mjs` 全绿（134 套件）；
-3. 迁出的文件本身 ≤800 行、函数 ≤120 行（否则等于把债搬了个地方）。
+2. `node tools/test-all.mjs` 全绿；
+3. 迁出的文件本身 ≤800 行、函数 ≤120 行（否则等于把债搬了个地方）；
+4. **迁"文案 / 纯函数"这类必须留差分基准**：用迁移前的快照做 golden
+   （第 1 批的做法见 `test/fixtures/help-golden.json` + `test/help-parity-unit.mjs`：
+   42 条文案逐条 + 43 个 `if` 条件多重集）。
+   没有它，"少抄了一行字"这种错**永远不会有人发现**——帮助菜单没人会去数行数。
 
 ## 6. 硬闸门
 
