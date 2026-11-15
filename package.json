@@ -18,7 +18,8 @@
   "scripts": {
     "control": "node control/bin/qq-control.mjs",
     "test": "node test/control-unit.mjs",
-    "test:all": "node tools/test-all.mjs"
+    "test:all": "node tools/test-all.mjs",
+    "host-guard": "node tools/host-guard.mjs"
   },
   "exports": {
     ".": "./lib/index.js",
