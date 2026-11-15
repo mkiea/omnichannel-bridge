@@ -32,23 +32,43 @@ lib/panel.js           1,340
 
 ## 2. 依据
 
-### 2.1 已过产线（`tools/lit_hardgate.py`，12/12 PASS，全文在 `调研/fulltext/`）
+### 2.1 已过产线（`tools/lit_hardgate.py`，两轮共 **20/20 PASS**，全文在 `调研/fulltext/`）
 
-精读笔记：`调研/软工-大项目模块化-精读-2026-11-15.md`。四条直接改变本文档的结论：
+精读笔记：`调研/软工-大项目模块化-精读-2026-11-15.md`（第一轮 arXiv 四篇 + 第二轮权威两件）。
+
+**第二轮：权威件（补预印本的短板）**
+
+- **Parnas, 1972, CACM 15(12)**（`parnas-1972`，28,656 字符）：
+  「**it is almost always incorrect to begin the decomposition of a system into modules
+  on the basis of a flowchart**」；正确做法是先列"困难或易变的设计决策"，
+  「Each module is then designed to hide such a decision from the others」。
+  ⇒ §5 的迁移顺序按"**会变的东西**"切（命令集 / 媒体 / 主动开口策略各自独立变），
+  **不按消息流程切**——后者是 Parnas 点名说错的那种切法。
+
+- **SWEBOK Guide V4.0a, IEEE CS, 2024**（`swebok-v4`，1,273,690 字符，411 页）：
+  全文 `threshold` 出现 **7 次，无一处是代码规模阈值**；`lines of code` 只出现 1 次且在讲 code tuning。
+  关于规模只有一句方向性的话：
+  「**Smaller components are easier to understand and, therefore, to maintain.**」
+  ⇒ **不存在"权威给出的行数阈值"**。本文档那三个数字只能是工程自定值（见 §2.3）。
+  它真正给的是定义：耦合 =「a measure of the interdependence among modules」、
+  内聚 =「a measure of the strength of association of the elements within a module」，
+  以及「The lack of modularity can adversely affect the development time for subsequent releases」
+  —— 缺模块化被定性为**技术债**，不是审美问题。
+
+**第一轮：arXiv 四篇**（预印本，已在笔记里标注"未经同行评审"）
 
 1. **任何阈值都只是关于某个语料的陈述。**
    `2610.32466` §1：「The constants are frozen percentiles of a corpus, and
    **a constant derived from a corpus is a statement about that corpus**」。
-   ⇒ §1 那四个数字不是"工程标准"，是**对本仓库现状的一句陈述**，只配当"防恶化闸"。
-   那篇自己提的 scale-free 规则（median/MAD，modified z ≥ 3.5）判决也仍是
+   那篇自己提的 scale-free 规则（median/MAD，modified z ≥ 3.5）判决也是
    「**The verdict is inconclusive**, and the result that carries forward is **the shape of the errors**」。
 
 2. **复杂度判不出 god unit，差别在耦合。**
    `2610.32466` §10：「**a complexity measure cannot tell the two apart because the difference
    is not in the complexity**」「That is a **coupling question**」。
-   `1204.1967` 摘要：god class = 职责异质 + 与其他类高耦合 + 体积大（三者并列）。
+   `1204.1967`：god class = 职责异质 + 与其他类高耦合 + 体积大（三者并列）。
    `2610.32466` §2：「**Every one of these has a coupling or cohesion clause beside the complexity**」。
-   ⇒ **本闸门只覆盖第三条**，这是已知局限（见 §7「闸门不能做什么」）。
+   ⇒ **本闸门只覆盖第三条**，这是已知局限（§7）。
 
 3. **模块边界错位有可测代价。** `2411.01012`：本应放一起却被分开的实体对，
    **co-change 多 190%**；20 个项目 / 260,003 个实例。
@@ -64,11 +84,13 @@ lib/panel.js           1,340
 
 下面这些是本轮**没有**拿到全文、**没有**过闸的（书籍与经典论文不在 arXiv，本机无全文）：
 
-- Parnas, 1972, *On the Criteria To Be Used in Decomposing Systems into Modules*
 - Fowler, 2018, *Refactoring*（Large Class / Long Method 属于 Bloaters）
 - Martin, *Clean Architecture*（SRP / 依赖倒置）
 - Ousterhout, 2018, *A Philosophy of Software Design*（deep modules，反对过度拆分）
 - Cockburn, 2005, Ports & Adapters
+- MacCormack 等，DSM 的模块化实证（Management Science，付费）
+
+（Parnas 1972 原本也在这一栏，第二轮已补齐 CACM 全文并过闸 —— 见 §2.1。）
 
 它们的**主张方向**仍是本文档的设计依据，但**不能写成"文献已核实"**。
 要升级成结论，需要先补全文再跑 `tools/lit_hardgate.py`。
