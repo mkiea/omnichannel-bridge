@@ -19,7 +19,8 @@
     "control": "node control/bin/qq-control.mjs",
     "test": "node test/control-unit.mjs",
     "test:all": "node tools/test-all.mjs",
-    "host-guard": "node tools/host-guard.mjs"
+    "host-guard": "node tools/host-guard.mjs",
+    "gate": "node tools/module-gate.mjs"
   },
   "exports": {
     ".": "./lib/index.js",

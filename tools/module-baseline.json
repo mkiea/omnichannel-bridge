@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-15T08:34:38.096Z",
+  "limits": {
+    "lines": 800,
+    "bytes": 163840,
+    "maxFunctionLines": 120,
+    "maxClassMethods": 80
+  },
+  "files": {
+    "control/lib/supervisor.mjs": {
+      "lines": 1761,
+      "bytes": 86194,
+      "maxFunctionLines": 72,
+      "maxFunctionName": "async waylayStatus",
+      "maxClassMethods": 58
+    },
+    "lib/bridge.js": {
+      "lines": 14361,
+      "bytes": 792419,
+      "maxFunctionLines": 1043,
+      "maxFunctionName": "async #onQqMessageInner",
+      "maxClassMethods": 297
+    },
+    "lib/cardlook.js": {
+      "lines": 962,
+      "bytes": 50093,
+      "maxFunctionLines": 151,
+      "maxFunctionName": "clearTimeout",
+      "maxClassMethods": 1
+    },
+    "lib/index.js": {
+      "lines": 637,
+      "bytes": 89025,
+      "maxFunctionLines": 122,
+      "maxFunctionName": "async apply",
+      "maxClassMethods": 0
+    },
+    "lib/onebot.js": {
+      "lines": 1479,
+      "bytes": 70691,
+      "maxFunctionLines": 170,
+      "maxFunctionName": "parseMessage",
+      "maxClassMethods": 86
+    },
+    "lib/panel.js": {
+      "lines": 1340,
+      "bytes": 101690,
+      "maxFunctionLines": 46,
+      "maxFunctionName": "pluginBlock",
+      "maxClassMethods": 0
+    },
+    "lib/settings-routes.js": {
+      "lines": 1386,
+      "bytes": 75687,
+      "maxFunctionLines": 18,
+      "maxFunctionName": "waylayFetchJson",
+      "maxClassMethods": 1
+    },
+    "test/console-debug-unit.mjs": {
+      "lines": 420,
+      "bytes": 32241,
+      "maxFunctionLines": 190,
+      "maxFunctionName": "check",
+      "maxClassMethods": 8
+    },
+    "test/ops-bridge-unit.mjs": {
+      "lines": 1322,
+      "bytes": 71638,
+      "maxFunctionLines": 40,
+      "maxFunctionName": "check",
+      "maxClassMethods": 97
+    },
+    "test/settings-unit.mjs": {
+      "lines": 2390,
+      "bytes": 161185,
+      "maxFunctionLines": 185,
+      "maxFunctionName": "check",
+      "maxClassMethods": 43
+    },
+    "test/unattended-unit.mjs": {
+      "lines": 943,
+      "bytes": 50499,
+      "maxFunctionLines": 27,
+      "maxFunctionName": "check",
+      "maxClassMethods": 53
+    },
+    "tools/doctor.mjs": {
+      "lines": 387,
+      "bytes": 19711,
+      "maxFunctionLines": 149,
+      "maxFunctionName": "async checkInstall",
+      "maxClassMethods": 0
+    }
+  }
+}
