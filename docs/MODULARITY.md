@@ -342,7 +342,7 @@ lib/
 
 | 类别 | 方法 | 行数 | 状态 |
 |---|---|---:|---|
-| 说说 | `#publishMoment` / `#momentRecentPics` / `#momentSticker` / `#momentsLog` / `#noteMomentsUnsupported` | 157 | 已迁 2 个（`lib/moments-media.js`，无状态的） |
+| 说说 | `#publishMoment` / `#momentRecentPics` / `#momentSticker` / `#momentsLog` / `#noteMomentsUnsupported` | 157 | **已迁 4 个**：取图 2 个 → `moments-media.js`，记账 2 个 → `moments-log.js`；只剩 `#publishMoment`（它主体是登录校验，属于 bridge 的身份域） |
 | 歌曲 | `#findSong` / `#listSongs` / `#songDir` | 24 | 待迁 |
 | 会话 | `#clearPendingSession` / `#forgetSession` | 12 | 待迁 |
 | 基础设施 | `#outboundText` / `#proactiveSocket` / `#liveSocket` / `#adminSay` / `#adminStatus` / `#ensureCanary` | 216 | 已迁 1 个（`lib/outbound-guard.js`），其余留 |
@@ -350,9 +350,10 @@ lib/
 **施工顺序：按"依赖能不能收窄"排，不是按行数**
 
 1. ✅ 说说取图 2 个 → `lib/moments-media.js`（无状态，2026-11-16 完成）
-2. **说说剩下 3 个** → 卡在锁存 `momentsUnsupported`：
-   它有 **3 处跨模块使用**（`#execAdminCommand` 写、`#proactiveFrame` 读、`#publishMoment` 写），
-   ⇒ **锁存留在 bridge**，模块只拿 `isUnsupported()` / `markUnsupported(err)` 两个函数。
+2. ✅ 说说记账 2 个 → `lib/moments-log.js`（同一晚）：锁存 `momentsUnsupported` **留在 bridge**
+   （3 处跨模块使用），模块只拿 `isUnsupported()` / `markUnsupported()`。
+   **`#publishMoment` 不动** —— 它 65 行里约 40 行是登录校验（`botUnauthorized` 10 处读者、
+   `loginMismatch` 10 处），那是 bridge 的身份域，迁出去等于把"系统"复制一份到模块里。
 3. **歌曲 3 个 + 会话 2 个** → `lib/admin-songs.js` / 会话操作（都很小，24 + 12 行）
 4. **最后才是 `#execAdminCommand` 本体** → 此时依赖从 17 降到 8–9，端口可接受。
 
