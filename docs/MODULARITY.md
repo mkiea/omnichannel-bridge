@@ -355,7 +355,12 @@ lib/
    **`#publishMoment` 不动** —— 它 65 行里约 40 行是登录校验（`botUnauthorized` 10 处读者、
    `loginMismatch` 10 处），那是 bridge 的身份域，迁出去等于把"系统"复制一份到模块里。
 3. **歌曲 3 个 + 会话 2 个** → `lib/admin-songs.js` / 会话操作（都很小，24 + 12 行）
-4. **最后才是 `#execAdminCommand` 本体** → 此时依赖从 17 降到 8–9，端口可接受。
+4. ✅ **`#execAdminCommand` 本体 → `lib/admin-commands.js`**（2026-11-16 完成）：
+   314 行 / 14 个分支。搬过去之后**闸门立刻拦下**（120 行/函数上限）⇒
+   拆成「**一分支一函数 + 一张表**」，14 个函数各自 3–70 行。
+   端口 **26 项**（config/ctx/server/sessions/agents/…/setHushUntil/…）——
+   **长是刻意的**：管理指令的本质就是"对系统状态的一组操作"，切成 20 个小模块只会让
+   "谁能改状态"更难看清。对照：`#publishMoment` 我们没搬，因为它的主体是登录校验。
 
 **为什么不一次做完**：717 行、要拆 3–4 个文件、还牵着登录态
 （`#publishMoment` 依赖 `#qzoneClientKey` / `#noteLoginIdentity` / `loginMismatch` /

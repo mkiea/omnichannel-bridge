@@ -1,0 +1,190 @@
+共 152 个套件；本次跑 141 个，跳过 11 个（要活宿主）
+跳过：live-e2e.mjs live-status.mjs live-stream.mjs replay-live-host.mjs sim-face.mjs sim-group.mjs sim-private.mjs sim-quote.mjs sim-sticker-send.mjs sim-sticker.mjs sim-user.mjs
+
+PASS  0.417s  acceptance-unit.mjs  75 passed
+PASS  0.552s  actions-unit.mjs  37 passed
+PASS  0.613s  archive-unit.mjs  86 passed
+PASS  0.181s  assets-unit.mjs  132 passed
+PASS  0.822s  bilibili-unit.mjs  35 passed
+PASS  2.948s  bridge-fault-unit.mjs  10 passed
+PASS   0.23s  broadcast-unit.mjs  189 passed
+PASS  0.275s  card-url-unit.mjs  14 passed
+PASS  0.261s  cardlook-unit.mjs  64 passed
+PASS  0.348s  checkin-unit.mjs  19 passed
+PASS   0.25s  circuit-breaker-unit.mjs  39 passed
+PASS  0.221s  command-registry-unit.mjs  17 passed
+PASS  15.166s  commands-unit.mjs  83 passed
+PASS  0.322s  config-doc-unit.mjs  3 passed
+PASS  0.732s  config-unit.mjs  27 passed
+PASS  0.811s  console-debug-unit.mjs  100 passed
+PASS  0.647s  control-unit.mjs  159 passed
+PASS  0.711s  datadir-unit.mjs  68 passed
+PASS  0.167s  dice-unit.mjs  61 passed
+PASS  9.784s  doctor-unit.mjs  15 passed
+PASS  0.299s  egress-coverage-unit.mjs  21 passed
+PASS  3.393s  egress-guard-unit.mjs  22 passed
+PASS  0.184s  emotion-prosody-unit.mjs  16 passed
+PASS  0.156s  emotion-state-unit.mjs  8 passed
+PASS  12.791s  engage-bridge-unit.mjs  90 passed
+PASS  0.201s  engage-unit.mjs  111 passed
+PASS  2.223s  env-preflight-unit.mjs  28 passed
+PASS   0.48s  existing-console-unit.mjs  27 passed
+PASS  0.751s  extension-unit.mjs  55 passed
+PASS  60.617s  fault-injection-unit.mjs  16 passed
+PASS   2.92s  features-unit.mjs  23 passed
+PASS  0.236s  feed-unit.mjs  144 passed
+PASS  0.247s  filter-unit.mjs  66 passed
+PASS  12.829s  find-unit.mjs  72 passed
+PASS  0.271s  fortune-unit.mjs  52 passed
+PASS  0.216s  forward-expand-unit.mjs  15 passed
+PASS  0.239s  forward-unit.mjs  120 passed
+PASS  2.005s  forward-wiring-unit.mjs  17 passed
+PASS  2.673s  fuzz-unit.mjs  7 passed
+PASS  0.247s  games-unit.mjs  75 passed
+PASS   0.44s  gif-frames-unit.mjs  9 passed
+PASS  9.095s  group-image-unit.mjs  8 passed
+PASS  0.243s  grouptools-unit.mjs  16 passed
+PASS  1.754s  guards-unit.mjs  28 passed
+PASS  0.223s  help-parity-unit.mjs  7 passed
+PASS  0.254s  history-unit.mjs  81 passed
+PASS  0.278s  host-pid-recover-unit.mjs  9 passed
+PASS   0.22s  image-prune-unit.mjs  10 passed
+PASS  0.439s  image-wait-unit.mjs  20 passed
+PASS  0.219s  imagegen-unit.mjs  15 passed
+PASS  2.319s  inactive-ctx-unit.mjs  12 passed
+PASS  4.187s  inbound-at-trace-unit.mjs  11 passed
+PASS  0.292s  inbound-path-unit.mjs  16 passed
+PASS  0.602s  inbox-unit.mjs  121 passed
+PASS  17.497s  inject-assets-unit.mjs  28 passed
+PASS  15.433s  inject-guard-unit.mjs  41 passed
+PASS  1.608s  insight-unit.mjs  19 passed
+PASS   0.32s  keywords-unit.mjs  47 passed
+PASS  0.214s  launcher-assets-unit.mjs  21 passed
+PASS  0.279s  link-read-unit.mjs  15 passed
+PASS  0.215s  login-guard-unit.mjs  13 passed
+PASS  0.227s  mcping-unit.mjs  84 passed
+PASS  0.232s  members-unit.mjs  111 passed
+PASS  0.159s  memory-digest-unit.mjs  19 passed
+PASS  0.207s  memory-overflow-unit.mjs  13 passed
+PASS  0.888s  module-gate-unit.mjs  4 passed
+PASS  2.265s  moment-cmd-unit.mjs  7 passed
+PASS  1.009s  moment-unsupported-unit.mjs  8 passed
+PASS  0.212s  notice-unit.mjs  11 passed
+PASS  0.503s  onebot-api-unit.mjs  69 passed
+PASS  0.347s  onebot-id-unit.mjs  17 passed
+PASS  4.769s  onebot-origin-unit.mjs  16 passed
+PASS  25.661s  ops-bridge-unit.mjs  192 passed
+PASS  0.209s  ops-unit.mjs  149 passed
+PASS   0.21s  outbound-guard-unit.mjs  20 passed
+PASS  0.194s  perf-unit.mjs  71 passed
+PASS  0.166s  persona-spec-unit.mjs  41 passed
+PASS  0.822s  persona-unit.mjs  64 passed
+PASS  0.795s  points-unit.mjs  43 passed
+FAIL  2.678s  privacy-unit.mjs  40 passed, 1 failed
+PASS  0.398s  proactive-backoff-unit.mjs  14 passed
+FAIL  2.845s  probe-unit.mjs  6 passed, 7 failed
+PASS  1.496s  protocol-smoke.mjs  3 passed
+FAIL  8.772s  qa-admin-unit.mjs  3 passed, 10 failed
+PASS  0.161s  qq-login-diagnose-unit.mjs  14 passed
+PASS   0.39s  quiet-unit.mjs  24 passed
+PASS  2.583s  quote-fallback-unit.mjs  19 passed
+PASS  0.976s  quote-unit.mjs  11 passed
+PASS  2.469s  qzone-unit.mjs  60 passed
+PASS  0.166s  ratelimit-unit.mjs  12 passed
+PASS  0.167s  recall-unit.mjs  58 passed
+PASS  0.159s  redpacket-unit.mjs  27 passed
+PASS  0.444s  redteam-r4-fixes-unit.mjs  22 passed
+PASS   0.16s  reminder-unit.mjs  32 passed
+PASS  0.507s  replay-console-unit.mjs  53 passed
+PASS  0.164s  replay-guard-unit.mjs  18 passed
+PASS  4.212s  replay-live.mjs  22 passed
+PASS  2.166s  replay-unit.mjs  74 passed
+PASS  0.169s  scenario-unit.mjs  49 passed
+PASS  3.828s  seeing-unit.mjs  86 passed
+PASS  1.899s  self-identity-unit.mjs  11 passed
+PASS   0.46s  send-artifact-unit.mjs  22 passed
+PASS  2.771s  send-throttle-unit.mjs  10 passed
+PASS  0.331s  send-unit.mjs  35 passed
+FAIL  2.166s  sessions-admin-unit.mjs  4 passed, 7 failed
+PASS  2.161s  settings-unit.mjs  263 passed
+PASS   1.22s  setup-http-unit.mjs  14 passed
+PASS  0.271s  setup-robust-unit.mjs  32 passed
+PASS  7.625s  smoke-run.mjs  7 passed
+PASS  21.291s  soak-unit.mjs  10 passed
+FAIL  0.426s  song-library-unit.mjs  11 passed, 3 failed
+PASS  0.319s  stale-unit.mjs  13 passed
+PASS  0.711s  static-unit.mjs  27 passed
+PASS  0.358s  stats-unit.mjs  28 passed
+PASS  122.758s  stress-unit.mjs  13 passed
+PASS  1.288s  stt-silk-unit.mjs  44 passed
+PASS  0.491s  stt-unit.mjs  30 passed
+PASS  1.249s  sync-tool-unit.mjs  14 passed
+PASS  0.911s  taint-unit.mjs  31 passed
+PASS  0.332s  token-hint-unit.mjs  11 passed
+PASS  5.191s  trace-branches-unit.mjs  44 passed
+PASS  0.259s  trace-unit.mjs  41 passed
+PASS  0.159s  tts-rewrite-unit.mjs  10 passed
+PASS  0.159s  tts-unit.mjs  32 passed
+PASS  0.372s  typing-delay-unit.mjs  9 passed
+PASS   8.45s  unattended-unit.mjs  110 passed
+PASS  0.203s  unit-reply.mjs  8 passed
+PASS  1.181s  verify-flow-unit.mjs  15 passed
+PASS  0.159s  verify-unit.mjs  45 passed
+PASS   0.23s  version-stamp-unit.mjs  45 passed
+PASS  0.441s  video-wiring-unit.mjs  35 passed
+PASS  3.234s  videofetch-unit.mjs  60 passed
+PASS  3.298s  vision-dedup-unit.mjs  4 passed
+PASS  0.183s  voice-path-unit.mjs  17 passed
+PASS   0.78s  voice-silk-unit.mjs  17 passed
+FAIL  0.163s  voice-unit.mjs  20 passed, 1 failed
+PASS  0.183s  waylay-launch-unit.mjs
+PASS  0.326s  webhook-unit.mjs  114 passed
+PASS  0.157s  webtext-unit.mjs  25 passed
+PASS  0.215s  why-unit.mjs  17 passed
+PASS  2.421s  workspace-unit.mjs  10 passed
+
+===== 失败 6 个 —— 每条的具体 FAIL 行如下 =====
+
+--- privacy-unit.mjs ---
+FAIL 密钥白名单里的样例确实还在代码里（白名单不是空壳） 在 lib/bridge.js 里找不到 !dlptest 的样例
+
+--- probe-unit.mjs ---
+FAIL A 回执里给了用法 "⚠️ debugLog is not defined"
+FAIL B 调用了指定的 action 
+FAIL B 参数原样透传（字符串 id 没被转成数字） 
+FAIL B 结果落在 <cwd>/_debug/ 下 []
+FAIL C 明说参数不是合法 JSON "⚠️ debugLog is not defined"
+FAIL E 回执说"调用失败" "⚠️ debugLog is not defined"
+FAIL E 把后端的话带回来了（不是一句"出错了"） "⚠️ debugLog is not defined"
+
+--- qa-admin-unit.mjs ---
+FAIL A 全绿时逐项列出 ⚠️ debugLog is not defined
+FAIL A 明确说"人的部分机器判不了" ⚠️ debugLog is not defined
+FAIL A 内核历史确实被问过 []
+FAIL D ★ 内核失败被点名 ⚠️ debugLog is not defined
+FAIL D 带回了后端原话 ⚠️ debugLog is not defined
+FAIL C ★ 代理没开时点名失败 ⚠️ debugLog is not defined
+FAIL C 提示 ONEBOT_WS_PORT ⚠️ debugLog is not defined
+FAIL E ★ 探针不会被 /file 的 10 秒挂起拖死 6000ms · ⚠️ debugLog is not defined
+FAIL E 回执是立刻到的（没撞 1.5s 超时） 6000ms
+FAIL F ★ 配置留空时回落到宿主默认模型 ⚠️ debugLog is not defined
+
+--- sessions-admin-unit.mjs ---
+FAIL A 报告了挂载数与旧会话数 ⚠️ debugLog is not defined
+FAIL C 摘掉 2 条 []
+FAIL C 工作区里只剩在用的那条 ["s-new","s-old-1","s-old-2"]
+FAIL C 回执说"数据没删" ⚠️ debugLog is not defined
+FAIL D 如实说读不到工作区分组 ⚠️ debugLog is not defined
+FAIL E 成功的那条照常摘 
+FAIL E ★ 失败被报出来（不是"已清理"） ⚠️ debugLog is not defined
+
+--- song-library-unit.mjs ---
+FAIL M6 ★!唱 先查曲库（#findSong 在合成之前） 
+FAIL M6 曲库命中返回 file（不是 text） 
+FAIL M6 没有歌时给出目录路径（否则用户不知道往哪放） 
+
+--- voice-unit.mjs ---
+FAIL V5 三个执行分支都在 
+
+套件：135 绿 / 6 红 / 0 卡死；断言累计 5688
+未跑（要活宿主，加 --live 才跑）：live-e2e.mjs live-status.mjs live-stream.mjs replay-live-host.mjs sim-face.mjs sim-group.mjs sim-private.mjs sim-quote.mjs sim-sticker-send.mjs sim-sticker.mjs sim-user.mjs

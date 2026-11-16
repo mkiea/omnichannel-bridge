@@ -48,14 +48,16 @@ check('M5 空库 → null', matchSongFile([], '小兔子乖乖') === null)
 
 // M6 源码级
 const src = readFileSync(new URL('../lib/bridge.js', import.meta.url), 'utf8')
-const singAt = src.indexOf("if (cmd === 'sing') {")
-const singBody = singAt < 0 ? '' : src.slice(singAt, singAt + 2600)
+// `!唱` 的分支 2026-11-16 搬到 lib/admin-commands.js，函数名 adminSing；判据不变。
+const adminSrc = readFileSync(new URL('../lib/admin-commands.js', import.meta.url), 'utf8')
+const singAt = adminSrc.indexOf('async function adminSing')
+const singBody = singAt < 0 ? '' : adminSrc.slice(singAt, singAt + 2600)
 check('M6 ★!唱 先查曲库（#findSong 在合成之前）',
-  singBody.includes('this.#findSong(text)') && singBody.indexOf('#findSong') < singBody.indexOf('念唱'))
+  singBody.includes('port.findSong(text)') && singBody.indexOf('#findSong') < singBody.indexOf('念唱'))
 check('M6 曲库命中返回 file（不是 text）', /voice: \{ file: song\.file \}/.test(singBody))
 check('M6 ★命中走 #sendVoiceFile（原样播），不合成',
   /if \(result\.voice\.file\)[\s\S]{0,160}#sendVoiceFile/.test(src))
-check('M6 没有歌时给出目录路径（否则用户不知道往哪放）', /把 mp3 放进：\$\{this\.#songDir\(\)\}/.test(singBody))
+check('M6 没有歌时给出目录路径（否则用户不知道往哪放）', /把 mp3 放进：\$\{port\.songDir\(\)\}/.test(singBody))
 
 console.log(`\n${passed} passed, ${failed} failed`)
 process.exit(failed > 0 ? 1 : 0)
