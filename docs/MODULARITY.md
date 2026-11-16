@@ -71,13 +71,13 @@ index.js（根，装配）
 
 **迁移实测（批 1：`#handleHelp` → `lib/help.js`；批 2：`#expandForwards` → `lib/forward-expand.js`）**
 
-| 指标 | 迁移前 | 批 1 | 批 2 | 批 3 | 命令扩展点 | 批 4 |
-|---|---|---|---|---|---|---|
-| `bridge.js` 行数 | 14,361 | 14,241 | 14,072 | 13,865 | 13,864 | **13,807** |
-| `bridge.js` 字节 | 793k | 775,287 | 775,228 | 765,907 | 765,907 | **762,335** |
-| `lib` 文件数 | 69 | 70 | 72 | 73 | 76 | **77** |
-| `bridge` fan-out | 58 | 59 | 61 | 62 | 62 | **63** |
-| 环 | 0 | 0 | 0 | 0 | 0 | **0** |
+| 指标 | 迁移前 | 批 1 | 批 2 | 批 3 | 命令扩展点 | 批 4 | 批 5 |
+|---|---|---|---|---|---|---|---|
+| `bridge.js` 行数 | 14,361 | 14,241 | 14,072 | 13,865 | 13,864 | 13,807 | **13,759** |
+| `bridge.js` 字节 | 793k | 775,287 | 775,228 | 765,907 | 765,907 | 762,335 | **759,559** |
+| `lib` 文件数 | 69 | 70 | 72 | 73 | 76 | 77 | **78** |
+| `bridge` fan-out | 58 | 59 | 61 | 62 | 62 | 63 | **64** |
+| 环 | 0 | 0 | 0 | 0 | 0 | 0 | **0** |
 
 ⚠️ **fan-out 涨是正常的，别拿它判单批成败**：桥还是"什么都自己调"，
 多一个模块就多一条边。真正的下降要等 `bridge.js` 自己被拆（第 5–8 批）——
@@ -334,6 +334,32 @@ lib/
 3. **复合重构拆单步**：一次只动一个簇，不顺手改行为；
 4. **迁移前先看有没有测试**：`#outboundText` 就是反例 —— 79 行、4 个状态、**零测试覆盖**，
    所以第 4 批的顺序是「先写 20 条单测 → 再搬」（`test/outbound-guard-unit.mjs`）。
+
+## 5.6 admin 子系统的施工图（2026-11-16，还没做，原因写在最前）
+
+`#execAdminCommand` 是 **churn 最高的一块（15）**，但它 315 行 + **17 个私有方法依赖**。
+端口长到没法看的原因不是"它复杂"，是**那 17 个里大多数是它自己的子命令分支**：
+
+| 类别 | 方法 | 行数 | 状态 |
+|---|---|---:|---|
+| 说说 | `#publishMoment` / `#momentRecentPics` / `#momentSticker` / `#momentsLog` / `#noteMomentsUnsupported` | 157 | 已迁 2 个（`lib/moments-media.js`，无状态的） |
+| 歌曲 | `#findSong` / `#listSongs` / `#songDir` | 24 | 待迁 |
+| 会话 | `#clearPendingSession` / `#forgetSession` | 12 | 待迁 |
+| 基础设施 | `#outboundText` / `#proactiveSocket` / `#liveSocket` / `#adminSay` / `#adminStatus` / `#ensureCanary` | 216 | 已迁 1 个（`lib/outbound-guard.js`），其余留 |
+
+**施工顺序：按"依赖能不能收窄"排，不是按行数**
+
+1. ✅ 说说取图 2 个 → `lib/moments-media.js`（无状态，2026-11-16 完成）
+2. **说说剩下 3 个** → 卡在锁存 `momentsUnsupported`：
+   它有 **3 处跨模块使用**（`#execAdminCommand` 写、`#proactiveFrame` 读、`#publishMoment` 写），
+   ⇒ **锁存留在 bridge**，模块只拿 `isUnsupported()` / `markUnsupported(err)` 两个函数。
+3. **歌曲 3 个 + 会话 2 个** → `lib/admin-songs.js` / 会话操作（都很小，24 + 12 行）
+4. **最后才是 `#execAdminCommand` 本体** → 此时依赖从 17 降到 8–9，端口可接受。
+
+**为什么不一次做完**：717 行、要拆 3–4 个文件、还牵着登录态
+（`#publishMoment` 依赖 `#qzoneClientKey` / `#noteLoginIdentity` / `loginMismatch` /
+`botUnauthorized` 四个）。按文献那条「complex and compound refactorings remain the primary
+source of failures」，这种规模必须拆单步。
 
 ## 6. 硬闸门
 
