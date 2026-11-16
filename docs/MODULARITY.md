@@ -71,13 +71,13 @@ index.js（根，装配）
 
 **迁移实测（批 1：`#handleHelp` → `lib/help.js`；批 2：`#expandForwards` → `lib/forward-expand.js`）**
 
-| 指标 | 迁移前 | 批 1 | 批 2 | 批 3 | 命令扩展点后 |
-|---|---|---|---|---|---|
-| `bridge.js` 行数 | 14,361 | 14,241 | 14,072 | 13,865 | **13,864** |
-| `bridge.js` 字节 | 793k | 775,287 | 775,228 | 765,907 | **765,907** |
-| `lib` 文件数 | 69 | 70 | 72 | 73 | **76** |
-| `bridge` fan-out | 58 | 59 | 61 | 62 | **62** |
-| 环 | 0 | 0 | 0 | 0 | **0** |
+| 指标 | 迁移前 | 批 1 | 批 2 | 批 3 | 命令扩展点 | 批 4 |
+|---|---|---|---|---|---|---|
+| `bridge.js` 行数 | 14,361 | 14,241 | 14,072 | 13,865 | 13,864 | **13,807** |
+| `bridge.js` 字节 | 793k | 775,287 | 775,228 | 765,907 | 765,907 | **762,335** |
+| `lib` 文件数 | 69 | 70 | 72 | 73 | 76 | **77** |
+| `bridge` fan-out | 58 | 59 | 61 | 62 | 62 | **63** |
+| 环 | 0 | 0 | 0 | 0 | 0 | **0** |
 
 ⚠️ **fan-out 涨是正常的，别拿它判单批成败**：桥还是"什么都自己调"，
 多一个模块就多一条边。真正的下降要等 `bridge.js` 自己被拆（第 5–8 批）——
@@ -310,6 +310,30 @@ lib/
    （第 1 批的做法见 `test/fixtures/help-golden.json` + `test/help-parity-unit.mjs`：
    42 条文案逐条 + 43 个 `if` 条件多重集）。
    没有它，"少抄了一行字"这种错**永远不会有人发现**——帮助菜单没人会去数行数。
+
+## 5.5 重构实践的文献约束（2026-11-16 补，全部过产线 7/7 PASS）
+
+迁移做到第 4 批才去查"重构实践"的文献，本来应该一开始就查。四条结论**直接约束我们的做法**：
+
+| # | 结论 | 原文 | 对我们的约束 |
+|---|---|---|---|
+| 1 | 重构过的代码**整体**更少 bug | `our study confirms the common intuition that refactored code is less bug-prone than non-refactored code` | 方向是对的，别因为怕出事就不拆 |
+| 2 | 但**单个**重构也经常引入 bug | `single refactorings often induce the occurrence of bugs across all analyzed projects` | 小步 ≠ 安全，每批都要验证 |
+| 3 | 最危险的是 **floss refactoring**：把重构和其它改动混在同一提交 | `code elements affected by refactorings made in conjunction with other non-refactoring changes in the same commit` | **一个 commit 只做重构，不夹带功能改动** |
+| 4 | 很多重构 bug **现有行为保持检测技术查不出来** | `many of such bugs induced by refactoring cannot be revealed with state-of-the-art techniques` | **测试全绿 ≠ 行为没变**，必须有 golden/差分 |
+
+（前三条来自 `2505.08005`，12 个项目 / 27,450 次重构 / 6,051 个报告缺陷的纵向实证；
+第 5 条口径来自 `2602.03712`：重现实例要过**编译 + 跑测试 + 自动重构检测**三关，
+且「complex and compound refactorings remain the primary source of failures」。）
+
+**落到流程上就是四条**：
+
+1. **一个 commit 只做一件事**（纯重构 / 纯功能，不混）—— 这条我们一直在做，现在有实证支撑；
+2. **每批必须有行为基准**：能逐字对比的（文案、纯函数输出）用 golden 快照，
+   有 IO 的用单测覆盖分支 —— 因为「测试绿」挡不住第 4 条说的那类 bug；
+3. **复合重构拆单步**：一次只动一个簇，不顺手改行为；
+4. **迁移前先看有没有测试**：`#outboundText` 就是反例 —— 79 行、4 个状态、**零测试覆盖**，
+   所以第 4 批的顺序是「先写 20 条单测 → 再搬」（`test/outbound-guard-unit.mjs`）。
 
 ## 6. 硬闸门
 
