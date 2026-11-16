@@ -397,11 +397,13 @@ check('没有密钥形态的字符串', secretHits.length === 0, [...new Set(sec
 // 白名单只允许放行"确实存在于被测代码里的故意样例"。样例被删了而白名单留着，
 // 明天就会有人往里塞真 key —— 那时白名单已经是"反正可以加"的垃圾桶了。
 {
-  const bridgeText = textFiles.find(({ name }) => name === 'lib/bridge.js')?.text ?? ''
+  // `!dlptest` 的样例 2026-11-16 搬到 lib/admin-commands.js（管理指令迁出）。
+  // 判据不变：白名单必须有真样例，只是去它现在住的地方找。
+  const bridgeText = textFiles.find(({ name }) => name === 'lib/admin-commands.js')?.text ?? ''
   const dlptestSample = /'原样密钥', '([^']+)'/.exec(bridgeText)?.[1] ?? ''
   check('密钥白名单里的样例确实还在代码里（白名单不是空壳）',
     dlptestSample === 'API_KEY: sk-proj-AbCdEf0123456789GhIjKlMn',
-    dlptestSample === '' ? '在 lib/bridge.js 里找不到 !dlptest 的样例' : dlptestSample.slice(0, 60))
+    dlptestSample === '' ? '在 lib/admin-commands.js 里找不到 !dlptest 的样例' : dlptestSample.slice(0, 60))
 }
 
 // 配置 schema 里所有"密钥类"字段的默认值必须是空串/占位（真实值只应存在于机器本地配置）

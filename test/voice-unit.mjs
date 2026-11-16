@@ -70,7 +70,12 @@ check('V4 每条都有 id/name/tag', VOICE_CATALOG.every((v) => v.id && v.name &
 // ---------- V5 源码级 ----------
 const src = readFileSync(new URL('../lib/bridge.js', import.meta.url), 'utf8')
 check('V5 ★中文别名（!音色/!试听/!唱）', /'音色':\s*'voice'/.test(src) && /'试听':\s*'speak'/.test(src) && /'唱':\s*'sing'/.test(src))
-check('V5 三个执行分支都在', /if \(cmd === 'voice'\) \{/.test(src) && /if \(cmd === 'speak'\) \{/.test(src) && /if \(cmd === 'sing'\) \{/.test(src))
+{
+  // 三个执行分支 2026-11-16 搬到 lib/admin-commands.js（一分支一函数）。判据不变：都要在。
+  const adminSrc = readFileSync(new URL('../lib/admin-commands.js', import.meta.url), 'utf8')
+  check('V5 三个执行分支都在',
+    adminSrc.includes('async function adminVoice') && adminSrc.includes('async function adminSpeak') && adminSrc.includes('async function adminSing'))
+}
 check('V5 ★唱歌不被 ttsMaxChars 截断', /options\.song === true \? 2000/.test(src))
 check('V5 语音结果先发语音再回执', /if \(result\.ok === true && result\.voice\)/.test(src))
 
