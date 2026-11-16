@@ -140,6 +140,35 @@ if (bridge !== null) {
   const mc = await send('/mc 127.0.0.1:1', 2500)
   check('S6 /mc 有回执（命令被认领）', mc.length > 0 && !/^\s*$/.test(mc), JSON.stringify(mc).slice(0, 100))
 
+  /**
+   * ── 安全三连（2026-11-16 加）──────────────────────────────────────
+   * 主人对目标的原话：「能正常跑 + 方便维护加功能 + 可长时间运维和安全」。
+   * 前两条单测能覆盖，**安全这三条只能靠端到端**：
+   * 权限、金丝雀不泄漏、DLP 真的在工作 —— 它们坏掉时都是"看着一切正常"。
+   */
+  {
+    // S8 非管理员发管理指令 ⇒ 必须进不来（`#isAdmin` 只认 adminUsers）
+    const outsider = { ...message('!hush 5'), userId: 2999999999, messageId: 'smoke-outsider' }
+    replies.length = 0
+    bridge.server.emit('message', outsider)
+    await sleep(900)
+    const got = replies.join(' | ')
+    check('S8 非管理员发 !hush 被拒', !/静默/.test(got), JSON.stringify(got).slice(0, 80))
+  }
+  {
+    // S9 !canary 只回前 8 位 —— 全值一旦落进聊天记录，聊天记录本身就是泄漏源
+    const canary = await send('!canary', 1200)
+    const full = /cny-[0-9a-f]{10}/.exec(canary)?.[0] ?? ''
+    check('S9 !canary 有回执', /金丝雀/.test(canary), JSON.stringify(canary).slice(0, 80))
+    check('S9 ★回执里没有金丝雀全值（只给前 8 位）', full === '', full)
+  }
+  {
+    // S10 !dlptest 现场跑一遍 DLP：必须命中密钥样例（它坏了 = 出站脱敏失效）
+    const dlp = await send('!dlptest', 1500)
+    check('S10 !dlptest 命中密钥样例（DLP 在工作）', /密钥格式/.test(dlp), JSON.stringify(dlp).slice(0, 100))
+    check('S10 普通聊天样例未命中（没误伤）', /普通聊天（不该动）[^\n]*未命中/.test(dlp), JSON.stringify(dlp).slice(-60))
+  }
+
   try { bridge.stop() } catch { /* 停不下来不影响判据，下面会报 */ }
   check('S7 stop() 不抛', true)
 }

@@ -131,7 +131,14 @@ const gaps = (list) => list.slice(1).map((row, index) => row.at - list[index].at
   const max = Math.max(...g)
   const buckets = new Set(g.map((ms) => Math.round(ms / 5)))
   check('E 抖动：6 条消息都发出去', arrivals.length === 6, `n=${arrivals.length}`)
-  check('E 抖动：间隔不全一样（不是定时任务）', buckets.size >= 3, `gaps=${JSON.stringify(g)}`)
+  /**
+   * 判据在 2026-11-16 改过一次：原来要求「按 5ms 分桶后至少 3 个桶」，
+   * 实测 gaps=[156,154,187,185,154] 只落进 2 个桶（31/37）⇒ 随机红。
+   * 5 个样本 + 5ms 分桶，容不下"至少 3 桶"这个要求 —— 判据本身太紧。
+   * 改成**极差**：只要最大最小差 ≥15ms，就说明"不是固定节拍"，这才是这条要表达的东西。
+   * （buckets 继续算，只用于失败时打印，不参与判定。）
+   */
+  check('E 抖动：间隔有实际波动（极差 ≥ 15ms）', max - min >= 15, `gaps=${JSON.stringify(g)} 极差=${max - min}ms 桶=${buckets.size}`)
   check('E 抖动：下界仍受 sendIntervalMs 约束', min >= 110, `min=${min}ms`)
   check('E 抖动：上界不超过 gap×1.8（含定时器容差）', max <= 120 * 1.8 + 40, `max=${max}ms`)
 }

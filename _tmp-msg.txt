@@ -1,38 +1,35 @@
-feat: 平台适配器契约 —— 从 66 个调用点反推，不是套理论
+feat: 按「可运维 + 安全」补两样东西（不再按行数推进）
 
-主人：「继续，不过 gpt 说的也只是参考，咱要根据实际项目来弄」。
+主人定目标：「能正常跑即可，方便维护和添加功能即可，不需要过度精简，
+目的是可维护和可长时间运维和安全」。
 
-所以先数，再定契约：bridge.js 里有 66 个 this.server.xxx() 调用点
-（currentSocket 33 / sendSegments 16 / 其余 1-4 次）。
+=> 终点确认：不是"缩到 5000 行"，是"能加功能、能运维、安全"。停止按行数推进。
 
-【数完才发现：它们根本不是一类东西】
-  必需 8 项：on / off / currentSocket / sendSegments / sendText / getMsg /
-            getLoginInfo / callAction  —— "收 → 认人 → 回"的最小闭环
-  可选 63 项分 9 组：groupAdmin / groupInfo / groupFiles / groupAlbum / groupTodo /
-            interaction / messageOps / friends / testHooks
-            —— 全是 QQ 特有概念（群相册、群待办、群签到、名片赞）
+【盘点，回答"还差多少"】
+bridge 13,474 行，>=80 行的函数 30 个 / 6,139 行（46%）。但真正值得拆的只剩 4 个
+（onQqMessageInner 1042 / onSessionEvent 327 / resolveQuoted 311 / handleEngageCommand 164
+= 1,844 行 = 14%）。其余是 handleOpsCommand（churn 1）、registerMediaTools（churn 1）、
+constructor（拆不了）。=> 剩下的是粘合层，拆它收益/风险不成比例。
 
-⇒ 契约必须分两层：必需缺一条就起不来；可选缺了只让对应功能降级。
-   如果强行要求 66 项全实现，等于宣布"只能接 QQ"。
+【1. 冒烟 7 -> 12 条：新增 5 条全是安全】
+  S8  非管理员发 !hush 被拒（#isAdmin 只认 adminUsers）
+  S9  !canary 有回执且**回执里没有金丝雀全值**（只给前 8 位 —— 全值落进聊天记录，
+      聊天记录本身就成泄漏源）
+  S10 !dlptest 命中密钥样例（DLP 真的在工作）+ 普通聊天不被误伤
+=> 这三类坏掉时都是"看着一切正常"，只能端到端测。
 
-【lib/platform-adapter.js】
-REQUIRED / OPTIONAL_GROUPS / CAPABILITY_MAP（能力→功能的影响表）/
-inspectAdapter / assertAdapter / describeAdapter / createMemoryAdapter
+【2. docs/OPERATIONS.md：运维手册】
+三条命令（/health /status 聊一句）、数据路径表（哪些能删/不能删/要备份）、
+**症状 -> 查什么** 8 行表（不回话/内容不对/命令没反应/看不到图/主动太频繁/脱敏误杀/内存涨）、
+三条硬命令、加功能指向、已知限制 5 条、一段时间后要做的维护 4 条。
 
-CAPABILITY_MAP 存在的唯一理由：能力缺失时的表现是"某个命令没反应、日志里什么都没有"——
-最难排查的一类。接新平台的人应该先看这张表，而不是等用户来报。
+【3. 顺手修一个随机红】
+send-throttle 的 E 组原来要求"按 5ms 分桶后至少 3 个桶"，实测只落进 2 个桶就红。
+5 个样本容不下这个要求 —— 判据本身太紧。改成**极差 >= 15ms**，它才是"不是固定节拍"的意思。
 
-【test/platform-adapter-unit.mjs 14/0】
-最关键的是 A3：直接拿 **OneBotServer 真实实例**跑 inspectAdapter() ——
-必需 8 项齐、可选 9 组一个不缺、未知方法 0 个。
-契约不是编的，和现网实现一致；哪天契约写错，A3 立刻红。
+【写断言时连错两次，都记在注释里】
+1. `/今天好累啊.*未命中/` —— . 不匹配换行，回执是多行的
+2. 改跨行还错 —— 回执里显示的是**样本名**（普通聊天（不该动）），不是样本内容
+=> 断言之前先打印一次真实回执。
 
-【一个刻意的取舍：没有接进 start()】
-试过在 bridge.start() 里加 inspectAdapter 告警 → 闸门拦（+4 行 / +323 字节）。
-选择撤销而不是"挪 4 行还债"：契约已被测试钉住（A3 比启动 warn 更强），
-那 4 行只换来一句日志。接第二个平台时再接进启动流程 —— 那时是刚需。
-写进 docs/ADAPTER.md §6，免得以后被当成"忘了接"。
-
-docs/ADAPTER.md：接新平台三步 + 能力缺失影响表 + 上面这个取舍。
-
-全量 142 绿 / 0 红 / 5704 断言。
+全量 142 绿 / 0 红 / 5709 断言；冒烟 12/12；闸门 PASS。
