@@ -1,0 +1,28 @@
+test: 管理指令全分支端到端脚本（14 个分支，18 条）
+
+主人：「你去弄个自动化脚本吧」。
+
+补的是上一轮自己指出的风险：admin-commands 有 14 个分支、26 项端口，
+而冒烟只覆盖了 !hush 一个 —— 端口传错一项的后果不是报错，是那个命令静默失效。
+
+【test/admin-commands-e2e.mjs，18 条，约 20 秒，不碰网络】
+逐个过 14 个分支：
+  !hush 5 / !status / !model / !canary / !dlptest / !groups / !say /
+  !reopen / !fav / !音色 / !试听 / !唱 列表 / !wake / !moment
+
+【判据是这次最关键的设计】
+判的是「**代码有没有坏**」，不是「业务成不成功」：
+  PASS = 有回执 且 不含 is not defined / Cannot read / TypeError / 未知指令
+  FAIL = 没回执 或 含上述
+业务失败是允许的：!groups 没连 OneBot 会回「读不到群列表」，那是对的；
+!moment 连不上 qzone 会回「后端没给 clientKey」，也是对的。
+—— 把业务失败判成红，这条脚本就永远跑不绿，也就没人看了。
+
+【顺手被自己的契约检查抓到一次】
+最后三条断言里用 inspectAdapter(mock) 验证"契约可被它满足"，
+结果报 `缺 getMsg` —— 是我写的 mock 少了一个必需项。
+这正好证明 platform-adapter 的契约不是摆设：它会指出实现（包括 mock）缺什么。
+
+docs/OPERATIONS.md 的"三条硬命令"同步改成四条，并写明这条脚本的判据口径。
+
+全量 143 绿 / 0 红 / 5727 断言。

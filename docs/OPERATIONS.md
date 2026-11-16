@@ -45,12 +45,18 @@
 ## 4. 出问题时的三条硬命令
 
 ```
-/node test/smoke-run.mjs      # 12 条：构造/启动/分发/回执/权限/金丝雀/DLP —— 8 秒
-/node tools/module-gate.mjs   # 结构有没有被改坏（ratchet）
-/node tools/test-all.mjs      # 全量 142 套件（约 7 分钟）
+node test/smoke-run.mjs            # 12 条：构造/启动/分发/回执/权限/金丝雀/DLP —— 8 秒
+node test/admin-commands-e2e.mjs   # 18 条：14 个管理分支逐个过 —— 20 秒
+node tools/module-gate.mjs         # 结构有没有被改坏（ratchet）
+node tools/test-all.mjs            # 全量 143 套件（约 7 分钟）
 ```
 
-**冒烟那 12 条就是"能不能跑"的定义**。它绿 → 链路通；它红 → 先修它，别改业务代码。
+**前两条就是"能不能跑"的定义**。它绿 → 链路通；它红 → 先修它，别改业务代码。
+
+`admin-commands-e2e` 的判据是 **"代码有没有坏"，不是"业务成不成功"**：
+`!groups` 没连上会回"读不到群列表"，那是对的；只有出现
+`is not defined` / `Cannot read` / `未知指令` 才算红。
+—— 把业务失败判成红，这条脚本就永远跑不绿，也就没人看了。
 
 ## 5. 加功能（不改那个大文件）
 
