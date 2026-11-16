@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-16T08:07:08.916Z",
+  "updatedAt": "2026-11-16T09:44:35.849Z",
   "limits": {
     "lines": 800,
     "bytes": 163840,
@@ -16,11 +16,11 @@
       "maxClassMethods": 58
     },
     "lib/bridge.js": {
-      "lines": 14072,
-      "bytes": 775287,
-      "maxFunctionLines": 1043,
+      "lines": 14050,
+      "bytes": 775228,
+      "maxFunctionLines": 1040,
       "maxFunctionName": "async #onQqMessageInner",
-      "maxClassMethods": 297
+      "maxClassMethods": 296
     },
     "lib/cardlook.js": {
       "lines": 962,
