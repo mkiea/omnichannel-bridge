@@ -1,38 +1,30 @@
-feat: 阈值相对化落地（module-relative）+ 撤回「再拆是坏账」
+test: 冒烟测试 —— 拆 admin 之前先建立「能跑」的基线
 
-主人：「继续吧，还有看看论文你要确认是坏账才能说」。
+主人：「继续吧拆完了要确认能跑，别炸了」。
 
-【我错了，先认】
-上一轮写「施工图到此为止，剩下的依赖是核心状态，再拆就是坏账」——
-那是意见，没量过。补了 co-change 才发现站不住。
+「能跑」不是单测绿，是**构造 → 启动 → 收消息 → 分发 → 回执**这条链。
+拆 315 行 + 17 依赖的 execAdminCommand 之前，先把这条链钉住 —— 否则拆完只能跑 mock 单测，
+真正的集成失败（少一个 import、构造函数顺序、搬走后调用点没改）一条都测不出来。
 
-2411.01012 的判据本来就写着 K_COR 超过 1 才算「这对本应放一起」，
-即**相对同类基线**，不是绝对共变率。按 Jaccard 量（无关方法对做基线）：
+test/smoke-run.mjs（149 行，7 条判据，全绿）：
+  S1 构造 + start() 不抛
+  S2 /ping         → "pong"            （走新扩展点 dispatchCommand）
+  S3 !hush 5       → "✅ 主动通道已静默 5 分钟"（走管理分发，就是待拆的那块）
+  S4 /help         → 菜单               （走 lib/help.js + golden）
+  S5 普通消息      → followup 被调用    （回合链路）
+  S6 /mc 127.0.0.1:1 → "❌ 离线"        （命令被认领；探测失败也算通）
+  S7 stop() 不抛
 
-  execAdminCommand ↔ 登录域        J=0.105  基线倍数 2.4x
-  execAdminCommand ↔ 歌曲/会话      J=0.067  基线倍数 1.6x
-  execAdminCommand ↔ 出站脱敏       J=0.200  基线倍数 4.6x
-  publishMoment    ↔ 登录域        J=0.375  基线 0.000（无穷）
-  无关基线均值（help/vision/stats）            0.043
+它最先抓到的是**我自己的错**，三条：
+  1. sendSegments 签名是 (socket, messageType, targetId, segments) 四参，我按一参写
+     ⇒ 回执全空，看起来像消息没被处理
+  2. ctx.agentDefaultModel.currentSelection() 缺 ⇒ 每条消息都炸 Cannot read properties，
+     但被 #safeReply 吞成一句「Agent 处理失败」
+  3. config.adminUsers 缺 ⇒ #isAdmin 恒 false，所有 ! 命令进不来
+⇒ 冒烟测试的前几次失败，先怀疑 fixture 再怀疑代码；但这三条本身也和「搬坏了」同现象（都是没反应）。
 
-2411.01012 说 InSep 多 190%（约 2.9x）。
-=> publishMoment 确实不该拆（0.375 vs 0）
-=> admin 只有 2.4x，**低于** 2.9x 判据线 —— 说「坏账」过强。
-   准确说法：拆完要接受约 2.4x 的跨域共同改动，是**有代价的迁移**，不是亏本买卖。
+顺带纠正一个危险判据：S3 第一版用 !status，回执是「Agent 处理失败：Cannot read…」，
+我一开始写 status.length > 0 就判过 —— 那是把「炸了但有错误消息」当成通过。
+改成断言回执不含失败/Cannot read，并换成 !hush（不碰 gate/会话的最小命令）。
 
-教训：「该不该拆」必须用相对基线的共变来判，行数和依赖数都只是代理。
-上一节拿「依赖数是登录域」当坏账证据，等于用结构代替了历史。
-
-【阈值相对化：tools/module-relative.mjs（新，130 行）】
-把认过的那条落地：2610.32466 的 scale-free 规则（median + MAD，modified z >= 3.5）
-+ 软件学报 2022 的「项目内平均值为基准 x 比例因子」。
-用**中位数**不用均值 —— bridge 一万三千行会把均值拉高，那正是「用最大值抬高门槛」。
-
-首跑（267 个文件，行数中位数 168 / MAD 85）：
-  lib/bridge.js      z=107.8   81.9x 中位数   <- 唯一的极端离群
-  test/settings      z= 17.6   14.2x
-  control/supervisor z= 12.6   10.5x
-绝对阈值 800 只能看出「超了 17 倍」，看不出「比第二名还高 6 倍」—— 这就是相对判据的价值。
-
-它**不替代闸门**：闸门管防恶化（ratchet 只许降），它管「哪个真的超常」。
-两者是不同问题，文档里一直这么写，现在代码也齐了。
+全量 141 绿 / 0 红 / 5691 断言（新增 7 条 + 冒烟本身不拖慢：全程约 8 秒）。
