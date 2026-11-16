@@ -9,6 +9,7 @@
  *   · **异常不吞**：一个命令抛错，要让调用方的 try 接住并记 trace，而不是被这里咽掉。
  */
 import { createCommandRegistry, dispatchCommand } from '../lib/commands/registry.js'
+import { extraCommands } from '../lib/commands/extra.js'
 
 let passed = 0
 let failed = 0
@@ -89,6 +90,26 @@ const port = { config: {} }
   const reg = createCommandRegistry([{ name: 'x', run: async () => 'truthy-but-not-true' }])
   const hit = await dispatchCommand(reg, port, {}, '')
   check('只有严格 true 算命中（避免返回值歧义）', hit === null)
+}
+
+// ── 登记表本身 ──────────────────────────────────────────────────────
+{
+  // 登记表里的每一条都必须过形状校验（重名/缺 run 会在**启动时**就炸，不是运行期）
+  let ok = true
+  try { createCommandRegistry(extraCommands) } catch { ok = false }
+  check('extraCommands 全部通过形状校验', ok, `${extraCommands.length} 条`)
+}
+{
+  // /ping 是扩展点的验收样本：加它**不该**改 bridge。
+  const ping = extraCommands.find((c) => c.name === 'ping')
+  check('示例命令 ping 在登记表里', ping !== undefined)
+  if (ping) {
+    const port = { config: {}, reply: async () => {} }
+    check('ping 认得 /ping', (await ping.run(port, {}, '/ping')) === true)
+    check('ping 认得全角 /ping', (await ping.run(port, {}, '／ping')) === true)
+    check('ping 不吞 /pingpong（前缀要落在词边界）', (await ping.run(port, {}, '/pingpong')) === false)
+    check('ping 不吞普通聊天', (await ping.run(port, {}, '刚才那个 ping 通了吗')) === false)
+  }
 }
 
 console.log(`\n${passed} passed, ${failed} failed`)

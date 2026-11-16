@@ -67,15 +67,14 @@ export const xxxCommand = {
 ### 3.2 加一个新命令的完整步骤
 
 1. 新建 `lib/commands/<名字>.js`，导出上面那个对象；
-2. 在 `bridge.js` 构造函数里，把它加进 `createCommandRegistry([...])`；
-3. 在 `#onQqMessageInner` 的 if 链里加**两行**（位置由你定，见 §4）：
-   ```js
-   const xxxHit = await this.#runCommand('xxx', message, text)
-   if (xxxHit !== null) { mark('command', true, xxxHit.traceLabel); return }
-   ```
-4. 有配置项的话，在 `lib/index.js` 的 schema 里加一条（这是 dsh 的契约，绕不开）。
+2. 在 **`lib/commands/extra.js`** 的数组里加一项（30 行的登记表，不在 1.4 万行的 bridge 里）；
+3. 有配置项的话，在 `lib/index.js` 的 schema 里加一条（这是 dsh 的契约，绕不开）。
 
-**不需要**再写处理器方法、不需要改分发逻辑。
+**`bridge.js` 一行都不用改** —— `#onQqMessageInner` 末尾有一个
+`dispatchCommand(this.commands, ...)`，它会遍历登记表里所有命令。
+
+⚠️ 代价与边界：末尾分发的命令排在**所有老命令之后**，所以只能放**精确前缀**
+（`/ping`），不能放模糊匹配 —— 模糊匹配的语义取决于位置，而位置在这张表里看不出上下文。
 
 ## 4. 已知取舍（都写下来，别以后当成 bug）
 
@@ -122,6 +121,7 @@ export const xxxCommand = {
 ## 6. 下一步
 
 - 39 个命令按 churn 迁（每批 2–3 个，用 `#runCommand` 两行式）
-- `dispatchCommand`（批量分发）目前只有单测覆盖、没有生产调用方 —— 等 if 链**整段**
-  搬进数组时启用；在那之前它是"留给未来"的 API，别当成死代码删掉
+- ✅ `dispatchCommand` **已有生产调用方**（`#onQqMessageInner` 末尾，2026-11-16）：
+  遍历全部命令，靠前的匹配成功已 `return`，到这里再试只会 `false`。
+  代价是每条未命中命令的消息多几次函数调用（微秒级），换来**顺序只有一处定义**
 - `port` 加字段要有理由：每加一个，命令能看见的世界就大一圈，反向依赖的风险也大一圈
