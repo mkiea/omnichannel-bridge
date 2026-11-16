@@ -40,10 +40,16 @@ function makeGuard(mode, extra = {}) {
   return { guard, events, traces, warns }
 }
 
-// 一条完整的假密钥（sk- + 20 位，过 16 位门槛；不能含 ant-/dlp 前缀）
-const KEY = 'sk-abcdefghij1234567890'
+/**
+ * 一条完整的假密钥。**长度是刻意的 19 位**：
+ *   · redact 的规则要 ≥16 位 —— 19 位能触发它（测试才有意义）；
+ *   · `privacy-unit` 的静态扫描线是 ≥20 位 —— 19 位不会让它把本文件报成"泄露了密钥"。
+ * 两个测试互相打架过一次（`FAIL 没有密钥形态的字符串 test/outbound-guard-unit.mjs`），
+ * 这不是谁对谁错：privacy-unit 的职责就是让仓库里不存在完整形态的 key。
+ */
+const KEY = 'sk-abcdefghij123456789'
 const KEY_HEAD = 'sk-abcdefgh'
-const KEY_TAIL = 'ij1234567890'
+const KEY_TAIL = 'ij123456789'
 
 // G1 off：原样返回，且窗口不应被写入
 {
