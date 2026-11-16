@@ -110,7 +110,10 @@ const base = `http://127.0.0.1:${server.address().port}`
   }
 
   const bridge = read('bridge.js')
-  const downloadToBody = topLevelBody(bridge, 'async function downloadTo')
+  // downloadTo 2026-11-16 迁到 lib/download.js（模块化第 2 批的前置）。
+  // 判据一条都不放松：仍要求「不裸 fetch / 走 fetchGuarded / 保留 download 前缀」，
+  // 只是去它现在住的地方找 —— 否则这条会因为「搬家」而假红。
+  const downloadToBody = topLevelBody(read('download.js'), 'async function downloadTo')
   check('找得到 downloadTo', downloadToBody !== null)
   if (downloadToBody !== null) {
     check('downloadTo 不再裸 fetch（K② K⑤）', !downloadToBody.includes('await fetch('), downloadToBody.slice(0, 60))
