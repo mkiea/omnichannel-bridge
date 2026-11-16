@@ -1,0 +1,38 @@
+feat: 平台适配器契约 —— 从 66 个调用点反推，不是套理论
+
+主人：「继续，不过 gpt 说的也只是参考，咱要根据实际项目来弄」。
+
+所以先数，再定契约：bridge.js 里有 66 个 this.server.xxx() 调用点
+（currentSocket 33 / sendSegments 16 / 其余 1-4 次）。
+
+【数完才发现：它们根本不是一类东西】
+  必需 8 项：on / off / currentSocket / sendSegments / sendText / getMsg /
+            getLoginInfo / callAction  —— "收 → 认人 → 回"的最小闭环
+  可选 63 项分 9 组：groupAdmin / groupInfo / groupFiles / groupAlbum / groupTodo /
+            interaction / messageOps / friends / testHooks
+            —— 全是 QQ 特有概念（群相册、群待办、群签到、名片赞）
+
+⇒ 契约必须分两层：必需缺一条就起不来；可选缺了只让对应功能降级。
+   如果强行要求 66 项全实现，等于宣布"只能接 QQ"。
+
+【lib/platform-adapter.js】
+REQUIRED / OPTIONAL_GROUPS / CAPABILITY_MAP（能力→功能的影响表）/
+inspectAdapter / assertAdapter / describeAdapter / createMemoryAdapter
+
+CAPABILITY_MAP 存在的唯一理由：能力缺失时的表现是"某个命令没反应、日志里什么都没有"——
+最难排查的一类。接新平台的人应该先看这张表，而不是等用户来报。
+
+【test/platform-adapter-unit.mjs 14/0】
+最关键的是 A3：直接拿 **OneBotServer 真实实例**跑 inspectAdapter() ——
+必需 8 项齐、可选 9 组一个不缺、未知方法 0 个。
+契约不是编的，和现网实现一致；哪天契约写错，A3 立刻红。
+
+【一个刻意的取舍：没有接进 start()】
+试过在 bridge.start() 里加 inspectAdapter 告警 → 闸门拦（+4 行 / +323 字节）。
+选择撤销而不是"挪 4 行还债"：契约已被测试钉住（A3 比启动 warn 更强），
+那 4 行只换来一句日志。接第二个平台时再接进启动流程 —— 那时是刚需。
+写进 docs/ADAPTER.md §6，免得以后被当成"忘了接"。
+
+docs/ADAPTER.md：接新平台三步 + 能力缺失影响表 + 上面这个取舍。
+
+全量 142 绿 / 0 红 / 5704 断言。
