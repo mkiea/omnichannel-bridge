@@ -62,10 +62,12 @@ const loginStale = pick(stale, 'qq-login')
 check('失效：qq-login 是 error 且带原因', loginStale.ok === false && loginStale.severity === 'error' && /登录态已失效/.test(loginStale.detail), JSON.stringify(loginStale))
 
 // ④ 已登录：qq-login ok，bot-online 回到正常判断
-const okState = run({ listening: true, loggedIn: true, uin: '3753306415', nickname: '猪猪鱼' })
+// 2026-11-17：原来用真实机器人号和真实昵称做样例（远程 main 里就带着），
+// privacy 闸门报得对 —— 换成编的号。测试意图（"能读出 uin"）不受影响。
+const okState = run({ listening: true, loggedIn: true, uin: '3000000001', nickname: '测试昵称' })
 const loginOk = pick(okState, 'qq-login')
 const botOk = pick(okState, 'bot-online')
-check('已登录：qq-login ok 且带 uin', loginOk.ok === true && /3753306415/.test(loginOk.detail), loginOk.detail)
+check('已登录：qq-login ok 且带 uin', loginOk.ok === true && /3000000001/.test(loginOk.detail), loginOk.detail)
 check('已登录：bot-online ok', botOk.ok === true, botOk.detail)
 
 // ⑤ Waylay 未运行：warn，提示启动
