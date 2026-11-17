@@ -281,7 +281,13 @@ if (PRIVATE_IDS.size === 0) {
   const qqHits = []
   const groupHits = []
   for (const { name, text } of textFiles) {
-    for (const match of text.matchAll(/\b\d{5,12}\b/g)) {
+    /**
+     * ⚠️ 2026-11-17 修：原来用 `/\b\d{5,12}\b/`，而 **`_` 是词字符**，
+     * 所以 `u_<数字>` 这种"下划线拼号"的写法**匹配不到** —— 闸门静默漏过。
+     * 实测：`/\b<数字>\b/.test('u_<数字>') === false`。
+     * 改成"前后不能是数字"（允许 `_`、字母、标点），再由 PRIVATE_KINDS 过滤误报。
+     */
+    for (const match of text.matchAll(/(?<![0-9])\d{5,12}(?![0-9])/g)) {
       const value = match[0]
       // 先判真实号再考虑占位号：反过来会让"真实号恰好等于占位号"被静默放过。
       if (!PRIVATE_KINDS.has(value)) continue
@@ -298,7 +304,7 @@ if (PRIVATE_IDS.size === 0) {
   // 文件名同样是泄露面：`qq-control-<真实号>.json` 这种内容干净、名字泄露的情况不能被漏掉。
   const nameHits = []
   for (const name of tracked) {
-    for (const match of name.matchAll(/\b\d{5,12}\b/g)) {
+    for (const match of name.matchAll(/(?<![0-9])\d{5,12}(?![0-9])/g)) {
       if (PRIVATE_IDS.has(match[0])) nameHits.push(name)
     }
   }
