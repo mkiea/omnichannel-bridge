@@ -176,6 +176,18 @@ if (bridge !== null) {
     check('S11 报告里点了「平台连接」', /平台连接/.test(st), '')
   }
 
+  {
+    /**
+     * S12 新会话后出站 DLP 仍在。
+     * 主人 2026-11-17 的原话：「**或者我新会话失效了**」—— 这是个合理怀疑：
+     * `outboundGuard` 挂在 bridge 实例上（不是会话上），`/new` 不该重置它。
+     * 这条就是钉住这个假设：换会话之后 `!dlptest` 仍然命中密钥样例。
+     */
+    await send('/new', 1500)
+    const dlp2 = await send('!dlptest', 1800)
+    check('S12 新会话后 DLP 仍命中（guard 是实例级，不随会话重置）', /密钥格式/.test(dlp2), JSON.stringify(dlp2).slice(0, 100))
+  }
+
   try { bridge.stop() } catch { /* 停不下来不影响判据，下面会报 */ }
   check('S7 stop() 不抛', true)
 }

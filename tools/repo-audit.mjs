@@ -67,6 +67,13 @@ const RESEARCH_PATTERNS = [
   [/(^|\/)role_spec/i, '人设规格'],
   [/(^|\/)AGENTS\.md$/i, '人设/工作约定'],
   [/\.jsonl$/i, '对话/数据集'],
+  /**
+   * ⑤ **内部研究词汇**：代码里出现这些词，等于把研究框架讲给公开仓库听。
+   * 2026-11-17 实测抓到过：`lib/emotion-state.js` 引用「设计/七情六欲…§4.2/§4.3」、
+   * `lib/tts.js` 写「正向被**依恋类型**压制」—— 功能代码可以公开，研究依据不必。
+   * 判据是"这个词只在研究文档里出现"，不是"含中文"。
+   */
+  [/(设计\/|七情六欲|依恋类型|主体是人|猫性[层特征]|消融实验|预注册)/, '内部研究词汇'],
 ]
 
 /** 白名单：这些文件允许出现上面的东西（都要写理由）。 */
@@ -140,6 +147,32 @@ function lineOf(text, index) {
   let n = 1
   for (let i = 0; i < index && i < text.length; i += 1) if (text[i] === '\n') n += 1
   return n
+}
+
+/**
+ * `--selftest`：喂三种材料验证规则本身（有差异 / 无差异 / 该命中的）。
+ * 2026-11-16 的教训：**新加的判据必须先用已知会被污染的样本测过**，否则不知道它能不能看见。
+ */
+if (argv.includes('--selftest')) {
+  const samples = [
+    ['设计/七情六欲与猫特征融合.md', true, '研究目录'],
+    ['正向被依恋类型压制', true, '依恋类型'],
+    ['u_1234567890', false, '普通占位'],
+    ['今天天气不错', false, '普通中文'],
+  ]
+  let bad = 0
+  for (const [text, shouldHit, label] of samples) {
+    const hit = RESEARCH_PATTERNS.some(([re]) => new RegExp(re.source, re.flags.replace('g', '')).test(text))
+      || SECRET_PATTERNS.some(([re]) => new RegExp(re.source, re.flags.replace('g', '')).test(text))
+    const ok = hit === shouldHit
+    if (!ok) bad += 1
+    console.log(`${ok ? 'PASS' : 'FAIL'} ${label}: ${JSON.stringify(text)} → 命中=${hit}（期望 ${shouldHit}）`)
+  }
+  // 号码正则：`u_<号>` 必须能被抓到（这就是 2026-11-17 那个 \b 的坑）
+  const qq = /(?<![0-9])(3\d{9})(?![0-9])/.test('u_3000000001')   // 用编的号，别拿真的当样本
+  console.log(`${qq ? 'PASS' : 'FAIL'} 下划线拼号能被抓（\b 的坑）`)
+  if (!qq) bad += 1
+  process.exit(bad === 0 ? 0 : 1)
 }
 
 const { files: fileCount, hits } = scan()
