@@ -136,5 +136,45 @@ const KEY_TAIL = 'ij123456789'
   check('空文本返回空串', guard.apply('') === '')
 }
 
+// ---------- M. 内部协议标记必须剥离（2026-11-17 真机泄露） ----------
+{
+  /**
+   * 真机原样：`（被卷了进去）诶——（被卷进去了）诶——[emotion=害羞][intensity=0.6]`
+   * 人设说这是"给系统看的，不是台词"，但主分支没有剥离逻辑 ⇒ 整条发给了用户。
+   * 下面四条钉住：正文留、标记走、只有标记就不发、关掉脱敏也要剥。
+   */
+  const { guard: g1 } = makeGuard('decoy')
+  const withMarker = g1.apply('诶——（抬头看了你一眼）[emotion=害羞][intensity=0.6]')
+  check('M1 标记被剥掉', withMarker !== null && !/emotion=|intensity=/.test(withMarker), JSON.stringify(withMarker))
+  check('M2 正文与动作都保留', withMarker !== null && /诶——/.test(withMarker) && /抬头看了你一眼/.test(withMarker), JSON.stringify(withMarker))
+
+  const { guard: g2, events: ev2 } = makeGuard('decoy')
+  const onlyMarkers = g2.apply('[emotion=害羞][intensity=0.6]')
+  check('M3 ★只有标记 ⇒ 不发（返回 null）', onlyMarkers === null, JSON.stringify(onlyMarkers))
+  check('M3 拦下时留了痕', ev2.some((e) => e.hits === 'markers-only'), JSON.stringify(ev2.map((e) => e.hits)))
+
+  // 关键：这是格式问题不是安全问题 —— 关掉脱敏也不能把内部机制暴露出去
+  const { guard: g3 } = makeGuard('off')
+  const offResult = g3.apply('好呀[emotion=开心]')
+  check('M4 ★off 模式下也剥离（协议格式与安全开关无关）', offResult === '好呀', JSON.stringify(offResult))
+
+  // 方括号里没有等号的旧写法也要清（`[emotion]`）
+  const { guard: g4 } = makeGuard('decoy')
+  check('M5 无值写法 [emotion] 也剥', g4.apply('嗯[emotion]') === '嗯', JSON.stringify(g4.apply('嗯[emotion]')))
+
+  /**
+   * ★ M7 纯动作照发。主人 2026-11-17 的原话：「**纯动作我觉得可以加，效果不错的**」。
+   * 所以这里有一条**明确的边界**：只剥标记，**不判"有没有台词"**。
+   * 剥完非空就发 —— 哪怕整条只有一个动作，那也是他要的效果。
+   */
+  const { guard: g6 } = makeGuard('decoy')
+  const pureAction = g6.apply('（没出声，手还伸在那儿）[emotion=害羞]')
+  check('M7 ★纯动作照发（只剥标记，不判有没有台词）', pureAction === '（没出声，手还伸在那儿）', JSON.stringify(pureAction))
+
+  // 不许误伤普通方括号（`[图片]` 这类是真内容）
+  const { guard: g5 } = makeGuard('decoy')
+  check('M6 不误伤普通方括号', g5.apply('看这个 [图片] 好可爱') === '看这个 [图片] 好可爱', '')
+}
+
 console.log(`\n${passed} passed, ${failed} failed`)
 process.exit(failed === 0 ? 0 : 1)
