@@ -44,14 +44,25 @@
 
 ## 4. 出问题时的三条硬命令
 
+**就记这一条**：
+
 ```
-node test/smoke-run.mjs            # 12 条：构造/启动/分发/回执/权限/金丝雀/DLP —— 8 秒
-node test/admin-commands-e2e.mjs   # 18 条：14 个管理分支逐个过 —— 20 秒
-node tools/module-gate.mjs         # 结构有没有被改坏（ratchet）
+node tools/verify.mjs            # 四关全跑（约 8 分钟）
+node tools/verify.mjs --quick    # 只跑前三关（约 30 秒）—— 日常改完代码够用
+```
+
+它会按"先快后慢"跑四关，**任一步失败就停**并打出最后几行；全过则一句话告诉你"可以重启了"。
+
+拆开是这四条（一般不用记）：
+
+```
+node tools/module-gate.mjs         # 结构闸门（ratchet，2 秒）
+node test/smoke-run.mjs            # 冒烟 12 条（8 秒）
+node test/admin-commands-e2e.mjs   # 管理分支 18 条（20 秒）
 node tools/test-all.mjs            # 全量 143 套件（约 7 分钟）
 ```
 
-**前两条就是"能不能跑"的定义**。它绿 → 链路通；它红 → 先修它，别改业务代码。
+**前三关就是"能不能跑"的定义**。它绿 → 链路通；它红 → 先修它，别改业务代码。
 
 `admin-commands-e2e` 的判据是 **"代码有没有坏"，不是"业务成不成功"**：
 `!groups` 没连上会回"读不到群列表"，那是对的；只有出现
