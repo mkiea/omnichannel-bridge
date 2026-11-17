@@ -169,6 +169,13 @@ if (bridge !== null) {
     check('S10 普通聊天样例未命中（没误伤）', /普通聊天（不该动）[^\n]*未命中/.test(dlp), JSON.stringify(dlp).slice(-60))
   }
 
+  {
+    // S11 实机体检入口：主人说「我进行实机测试的部分弄一个指令」—— 就是它
+    const st = await send('/自检', 1800)
+    check('S11 /自检 出报告（不崩、有结论行）', /自检/.test(st) && /[✅⚠️❌]/.test(st), JSON.stringify(st).slice(0, 140))
+    check('S11 报告里点了「平台连接」', /平台连接/.test(st), '')
+  }
+
   try { bridge.stop() } catch { /* 停不下来不影响判据，下面会报 */ }
   check('S7 stop() 不抛', true)
 }
