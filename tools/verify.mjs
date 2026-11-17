@@ -24,6 +24,13 @@ const asJson = argv.includes('--json')
 const STEPS = [
   // 第 0 关：推送前审计。这条**必须先跑** —— 它是唯一会阻止"把不该公开的东西推上去"的一关，
   // 而它只要 0.5 秒。主人 2026-11-17 明确要求："不要推送主要研究内容，要降级推送"。
+  /**
+   * 审计的**规则自检**先跑：喂 4 类样本 + 一条边界样本，证明规则看得见东西。
+   * 2026-11-17 加的：上一轮我修 `\b` 的坑时，如果先跑这一步就会发现
+   * "`u_<号>` 匹配不到"，而不是等它在真仓库上漏检。
+   * 代价 0.2 秒，收益是"改了规则却不知道自己改瞎了"这件事不会再发生。
+   */
+  { id: 'audit-selftest', label: '审计规则自检（喂样本验规则）', script: 'tools/repo-audit.mjs', args: ['--selftest'], budget: '1s' },
   { id: 'audit', label: '推送前审计（真实号/路径/密钥/研究资产）', script: 'tools/repo-audit.mjs', budget: '1s' },
   { id: 'gate', label: '结构闸门（ratchet）', script: 'tools/module-gate.mjs', budget: '2s' },
   { id: 'smoke', label: '冒烟（构造/分发/权限/DLP/自检）', script: 'test/smoke-run.mjs', budget: '13s' },
@@ -33,7 +40,7 @@ const STEPS = [
 
 function runOne(step) {
   const started = Date.now()
-  const res = spawnSync(process.execPath, [join(REPO, step.script)], {
+  const res = spawnSync(process.execPath, [join(REPO, step.script), ...(step.args ?? [])], {
     cwd: REPO,
     encoding: 'utf8',
     maxBuffer: 64 * 1024 * 1024,
