@@ -30,3 +30,9 @@
 # npm 生成的锁文件：本 profile 是 **pnpm workspace**，它不读这个文件；
 # 留在这儿只会和 package.json 的 `ws` 版本各说各话。
 package-lock.json
+
+# 情绪参数表：具体调参属于研究内容，不随开源代码发布（2026-11-10）
+/data/emotions.json
+
+# 提交信息用的临时文件（2026-11-17：误入版本库两次）
+_tmp-msg.txt
