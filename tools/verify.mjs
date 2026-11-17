@@ -25,7 +25,7 @@ const STEPS = [
   { id: 'gate', label: '结构闸门（ratchet）', script: 'tools/module-gate.mjs', budget: '2s' },
   { id: 'smoke', label: '冒烟（构造/分发/权限/DLP/自检）', script: 'test/smoke-run.mjs', budget: '13s' },
   { id: 'admin', label: '管理指令 E2E（14 个分支）', script: 'test/admin-commands-e2e.mjs', budget: '16s' },
-  { id: 'all', label: '全量套件（143 个）', script: 'tools/test-all.mjs', budget: '8min', skipInQuick: true },
+  { id: 'all', label: '全量套件', script: 'tools/test-all.mjs', budget: '9min', skipInQuick: true },
 ]
 
 function runOne(step) {
