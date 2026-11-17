@@ -92,6 +92,24 @@ NeurIPS 那篇专门做 transition smoothing，说明这是公认问题，不是
   - `synthesize()` 目前只收 `rate`；要支持 `pitch`/`volume` 才能用满 edge-tts 的能力
 - 配置项建议：`ttsStyle`（已有）、`ttsStyleDegree`、`ttsRate`、`ttsPitch`、`ttsBreakMs`
 
+## 8.5 情绪通道（2026-11-10）
+
+`pickProsody()` 先看情绪词、再看标点；另有一条**显式通道**：模型在回复末尾写
+`[emotion=情绪][intensity=0.8]`，由 `parseEmotionTags()` 剥掉，`emotionToProsody()`
+换算成 `rate/pitch/volume`。标签不会出现在聊天里。
+
+**具体情绪表不随仓库发布**：每种情绪对应的参数属于调参结果，放在
+`data/emotions.json`（已被 `.gitignore` 排除）。仓库里只有一张最小的中性表，
+没有该文件时代码仍能跑，只是情绪只剩三档。
+
+公开的换算规则：
+
+- 强度 `intensity` 取 0–1，幅度 = `0.5 + intensity`；
+- 负向情绪 ×1.2、正向 ×0.8（依据见私有设计文档 `七情六欲…§4.3`）；
+- `volume` 不随强度缩放（否则"很委屈"会小到听不见）。
+
+触发词表、参数档与人设绑定，属于研究内容，不在本仓库。
+
 ## 9. 来源
 
 - edge-tts PyPI 7.2.8 / README（自定义 SSML 已移除，仅 rate/volume/pitch）
