@@ -36,3 +36,6 @@ package-lock.json
 
 # 提交信息用的临时文件（2026-11-17：误入版本库两次）
 _tmp-msg.txt
+
+# 我跑测试时临时落的日志（2026-11-17：_tmp-testall13.log 曾误入版本库）
+_tmp-*.log

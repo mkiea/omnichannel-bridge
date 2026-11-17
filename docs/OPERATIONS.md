@@ -47,9 +47,16 @@
 **就记这一条**：
 
 ```
-node tools/verify.mjs            # 四关全跑（约 8 分钟）
-node tools/verify.mjs --quick    # 只跑前三关（约 30 秒）—— 日常改完代码够用
+node tools/verify.mjs            # 五关全跑（约 9 分钟）
+node tools/verify.mjs --quick    # 前四关（约 30 秒）—— 日常改完代码够用
 ```
+
+**第 0 关是「推送前审计」**（`tools/repo-audit.mjs`，0.5 秒）：
+扫已跟踪文件里的**真实 QQ 号 / 本机路径 / 密钥形态 / 研究资产**（模型权重、训练脚本、
+人设目录、数据集）。有 🔴 就拦住不让推。
+
+这个仓库是**公开**的（github.com/mkiea/qq-integration），推错不可逆。已经踩过：
+`_tmp-msg.txt` 两次、`_tmp-testall13.log` 一次、真实号写进 CHANGELOG 一次 —— 都靠人记不住，所以做成脚本。
 
 它会按"先快后慢"跑四关，**任一步失败就停**并打出最后几行；全过则一句话告诉你"可以重启了"。
 

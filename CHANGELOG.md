@@ -264,7 +264,7 @@ Save 后读回核对 Target/WorkingDir/Icon）；`一键启动.bat` 在体检后
 **① 记忆：归档溢出不再静默丢弃（`2d6624a`）**
 `archive` 满 400 条后原来 `archive.shift()` 直接丢最旧 —— 不落盘、不记日志。现在改成
 append 到 `qq-memory/_overflow/<key>.jsonl` 并记 `memory-overflow` 事件；写盘抽成
-`lib/memory-overflow.js`（13 项单测）。已满的两个会话（`u_3314377126` / `u_2151233954`）从此不再丢。
+`lib/memory-overflow.js`（13 项单测）。已满的两个会话（`u_<用户A>` / `u_<用户B>`）从此不再丢。
 
 **② 总纲：出处校验闸 + 刷新解耦（`a9f16b9` / `b296680`）**
 - 本地 7B 会编（实测编出「看动画」、把对方说的「虚拟机」写成她的喜好）⇒ 新增

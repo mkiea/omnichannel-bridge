@@ -22,6 +22,9 @@ const asJson = argv.includes('--json')
 
 /** 四关，按"越快越先跑"排：先失败先停，不浪费 7 分钟。 */
 const STEPS = [
+  // 第 0 关：推送前审计。这条**必须先跑** —— 它是唯一会阻止"把不该公开的东西推上去"的一关，
+  // 而它只要 0.5 秒。主人 2026-11-17 明确要求："不要推送主要研究内容，要降级推送"。
+  { id: 'audit', label: '推送前审计（真实号/路径/密钥/研究资产）', script: 'tools/repo-audit.mjs', budget: '1s' },
   { id: 'gate', label: '结构闸门（ratchet）', script: 'tools/module-gate.mjs', budget: '2s' },
   { id: 'smoke', label: '冒烟（构造/分发/权限/DLP/自检）', script: 'test/smoke-run.mjs', budget: '13s' },
   { id: 'admin', label: '管理指令 E2E（14 个分支）', script: 'test/admin-commands-e2e.mjs', budget: '16s' },
