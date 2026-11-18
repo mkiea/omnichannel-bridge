@@ -313,8 +313,8 @@ server.close()
   if (typeof summary === 'function') {
     const base = { qrIsNew: false, qr: { exists: false }, waylayUp: true }
     check('登录页抬头：已登录时明确写"已登录"+昵称（用户要的就是这句话）',
-      summary({ ...base, online: true, loggedIn: true, nickname: '猪猪鱼', uin: '10001' }).includes('已登录')
-      && summary({ ...base, online: true, loggedIn: true, nickname: '猪猪鱼', uin: '10001' }).includes('猪猪鱼'))
+      summary({ ...base, online: true, loggedIn: true, nickname: '测试', uin: '10001' }).includes('已登录')
+      && summary({ ...base, online: true, loggedIn: true, nickname: '测试', uin: '10001' }).includes('测试'))
     check('登录页抬头：未登录 + 有新码 ⇒ 说"待扫"',
       summary({ ...base, online: false, loggedIn: false, qrIsNew: true, qr: { exists: true, fresh: true, ageSeconds: 12 } }).includes('新二维码'))
     check('登录页抬头：未登录 + 码过期 ⇒ 说"已过期"并给出动作',

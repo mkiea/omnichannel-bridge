@@ -73,7 +73,16 @@ const RESEARCH_PATTERNS = [
    * `lib/tts.js` 写「正向被**依恋类型**压制」—— 功能代码可以公开，研究依据不必。
    * 判据是"这个词只在研究文档里出现"，不是"含中文"。
    */
-  [/(设计\/|七情六欲|依恋类型|主体是人|猫性[层特征]|消融实验|预注册)/, '内部研究词汇'],
+]
+
+/**
+ * ⑤ **内部研究词汇**：只能扫**正文**（扫文件名没意义）。
+ * 2026-11-18 外部审计指出：原来这条混在 RESEARCH_PATTERNS 里、而那段循环只对 `file`
+ * 跑 `re.test(file)` ⇒ **正文里的研究文档章节永远不会被报**，而 `--selftest`
+ * 拿正文样本测它又是绿的 —— 自检绿、实扫空。现在分开：文件名规则 / 正文规则。
+ */
+const RESEARCH_TEXT_PATTERNS = [
+  [/(设计\/七情六欲|七情六欲|依恋类型|主体是人|猫性层|消融实验|预注册)/, '内部研究词汇'],
 ]
 
 /** 白名单：这些文件允许出现上面的东西（都要写理由）。 */
@@ -82,7 +91,12 @@ const ALLOW = [
   { file: /^lib\/redact\.js$/, why: '脱敏规则本身要含密钥形态（否则测不出来）' },
   { file: /^test\/platform-adapter-unit\.mjs$/, why: '契约测试里列方法名' },
   { file: /^docs\/ADAPTER\.md$/, why: '文档里举能力名' },
-  { file: /^CHANGELOG\.md$/, why: '历史记录；已脱敏，保留以维持时间线' },
+  // 这几份**定义**"什么算研究词汇"，必然包含这些词本身
+  { file: /^docs\/PRIVACY(-HANDOFF)?\.md$/, why: '隐私手册在定义判据' },
+  { file: /^docs\/REDTEAM(-HANDOFF)?\.md$/, why: '攻击手册在定义判据' },
+  { file: /^tools\/repo-audit\.mjs$/, why: '审计工具本身就是规则的载体' },
+  // CHANGELOG 是历史记录，**只豁免拟人指代这类噪音**；真实号/密钥仍然必须报。
+  { file: /^CHANGELOG\.md$/, why: '历史记录（仅豁免拟人类噪音）', skipKinds: ['内部研究词汇'] },
 ]
 
 function listFiles() {
@@ -91,8 +105,8 @@ function listFiles() {
   return out.split('\n').map((l) => l.trim()).filter(Boolean)
 }
 
-function isAllowed(file) {
-  return ALLOW.some((a) => a.file.test(file))
+function isAllowed(file, kind = '') {
+  return ALLOW.some((a) => a.file.test(file) && !(Array.isArray(a.skipKinds) && a.skipKinds.includes(kind)))
 }
 
 function scan() {
@@ -126,6 +140,11 @@ function scan() {
         if (!['Public', 'Default', 'user', 'someone', 'example', 'yourname', 'xxx'].includes(m[1])) {
           hits.push({ file, kind: '本机路径', level: 'yellow', detail: m[0], line: lineOf(text, m.index) })
         }
+      }
+    }
+    if (!isAllowed(file)) {
+      for (const [re, label] of RESEARCH_TEXT_PATTERNS) {
+        if (re.test(text)) hits.push({ file, kind: label, level: 'red', detail: '正文命中研究词汇', line: lineOf(text, text.search(re)) })
       }
     }
     for (const [re, label] of SECRET_PATTERNS) {
@@ -162,12 +181,27 @@ if (argv.includes('--selftest')) {
   ]
   let bad = 0
   for (const [text, shouldHit, label] of samples) {
-    const hit = RESEARCH_PATTERNS.some(([re]) => new RegExp(re.source, re.flags.replace('g', '')).test(text))
-      || SECRET_PATTERNS.some(([re]) => new RegExp(re.source, re.flags.replace('g', '')).test(text))
+    // 三个数组都要测：文件名规则 + 正文规则 + 密钥规则（否则改了结构、自检还在测旧的）
+    const hit = [...RESEARCH_PATTERNS, ...RESEARCH_TEXT_PATTERNS, ...SECRET_PATTERNS]
+      .some(([re]) => new RegExp(re.source, re.flags.replace('g', '')).test(text))
     const ok = hit === shouldHit
     if (!ok) bad += 1
     console.log(`${ok ? 'PASS' : 'FAIL'} ${label}: ${JSON.stringify(text)} → 命中=${hit}（期望 ${shouldHit}）`)
   }
+  /**
+   * ★ 2026-11-18 外部审计的核心教训：**自检和实扫必须同源**。
+   *
+   * 原来 `--selftest` 拿**正文样本**去测 `RESEARCH_PATTERNS`（绿的），
+   * 而 `scan()` 里那段循环只对**文件名**跑 `re.test(file)` ⇒ 自检绿、实扫空，
+   * `docs/` 正文里的研究词汇永远不会被报。
+   *
+   * 这条断言钉住"研究词汇规则确实被用在了 text 上"，而不是只在自检里被用。
+   */
+  const self = readFileSync(fileURLToPath(import.meta.url), 'utf8')
+  const usedOnText = /for\s*\(\s*const\s*\[re,\s*label\]\s*of\s*RESEARCH_TEXT_PATTERNS\s*\)\s*\{\s*\n\s*if\s*\(re\.test\(text\)/.test(self)
+  console.log(`${usedOnText ? 'PASS' : 'FAIL'} 研究词汇规则真的扫正文（不是只扫文件名）`)
+  if (!usedOnText) bad += 1
+
   // 号码正则：`u_<号>` 必须能被抓到（这就是 2026-11-17 那个 \b 的坑）
   const qq = /(?<![0-9])(3\d{9})(?![0-9])/.test('u_3000000001')   // 用编的号，别拿真的当样本
   console.log(`${qq ? 'PASS' : 'FAIL'} 下划线拼号能被抓（\b 的坑）`)

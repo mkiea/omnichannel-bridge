@@ -423,7 +423,16 @@ function measureAll() {
   const measured = []
   for (const file of collectFiles().sort()) {
     let src = ''
-    try { src = readFileSync(file, 'utf8') } catch { continue }
+    /**
+     * ⚠️ 读进来先归一化行尾（2026-11-18）。
+     *
+     * 仓库 `.gitattributes` 写死 `eol=lf`，但**编辑器/脚本可能把工作区写成 CRLF**
+     * （我自己用 Python 改文件就踩了：`open(...,'w')` 在 Windows 默认 CRLF）。
+     * 那时 `Buffer.byteLength` 每行多算 1 字节 —— 420 行的文件凭空涨 420 字节，
+     * 闸门报「字节变大」，而 `git diff` 归一化后**看不出任何改动**，极难反查。
+     * 归一化之后，这道闸只量内容、不量行尾。
+     */
+    try { src = readFileSync(file, 'utf8').replace(/\r\n/g, '\n') } catch { continue }
     measured.push(measureSource(src, relative(REPO, file).split(sep).join('/')))
   }
   return measured
