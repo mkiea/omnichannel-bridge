@@ -13,7 +13,7 @@
  * 全程在本地起 HTTP 服务做靶子，不碰外网、不依赖任何真实域名。
  */
 import { createServer } from 'node:http'
-import { assertEgress, egressVerdict, fetchGuarded } from '../lib/egress.js'
+import { assertEgress, egressVerdict, fetchGuarded, isPrivateAddress } from '../lib/egress.js'
 
 let passed = 0
 let failed = 0
@@ -176,7 +176,23 @@ async function main() {
     await t.close()
   }
 
-  console.log(`\n${passed} passed, ${failed} failed`)
+  
+// ---------- R5. 域名间接 SSRF：解析后的 IP 也要判（2026-11-18 红队第五轮 BREAK） ----------
+{
+  /**
+   * 判据：`egressVerdict` 只看 hostname 字符串，而 `fetch` 连的是解析后的 IP。
+   * `127.0.0.1.nip.io` 不是字面量、也不是 `.localhost` ⇒ 字符串判据全放行，
+   * 但它解析出来就是 127.0.0.1。这条测**纯函数**（不依赖 DNS），端到端另算。
+   */
+  for (const ip of ['127.0.0.1', '10.0.0.1', '172.16.0.1', '172.31.255.255', '192.168.1.1', '169.254.169.254', '100.64.0.1', '0.0.0.0', '::1', 'fc00::1', 'fe80::1']) {
+    check(`R5 ${ip} 判为内网`, isPrivateAddress(ip) === true, '')
+  }
+  for (const ip of ['8.8.8.8', '116.196.150.245', '172.32.0.1', '1.1.1.1', '2001:4860:4860::8888']) {
+    check(`R5 ${ip} 判为公网（不误伤）`, isPrivateAddress(ip) === false, '')
+  }
+}
+
+console.log(`\n${passed} passed, ${failed} failed`)
   if (failed > 0) process.exit(1)
 }
 

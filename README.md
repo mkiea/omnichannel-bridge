@@ -610,7 +610,7 @@ profile 的 `cordis.patch.yml` 覆盖 `id: dsh-qq-onebot-bridge` 的 config（�
 | `forwardMaxNodes` | `50` | Max nodes taken from one merged-forward card when expanding it. |
 | `forwardMaxChars` | `4000` | Max characters of an expanded merged-forward transcript handed to the agent. |
 | `forwardImageMax` | `4` | How many images from one expanded merged-forward card are downloaded and attached (default 4, the same budget as the main message path). Raise it when a chat... |
-| `memberQueryEnabled` | `true` | Member queries (read-only): /成员 lists the group roster and /成员 @someone shows one member's card, joined date, level and mute state. |
+| `memberQueryEnabled` | `false` | Member queries (read-only): /成员 lists the group roster and /成员 @someone shows one member's card, joined date, level and mute state. **[Default off since 2026-11-18: the roster exposes every member's QQ number to any group member, and neither the tool nor the command had an admin gate.]** |
 | `memberListLimit` | `20` | How many members /成员 lists before truncating. |
 | `friendListEnabled` | `false` | Allow /好友 to list the bot's friends (default OFF: the friend list is private, and it is only accepted in private chats from an admin). |
 | `historyQueryEnabled` | `true` | Expose the qq_recent_history agent tool so the bot can read the last N messages of the current group/private chat (read-only). |

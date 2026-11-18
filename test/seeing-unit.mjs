@@ -132,6 +132,9 @@ const dir = mkdtempSync(join(tmpdir(), 'qq-seeing-test-'))
 
 /** Config keys every scenario pins, so no test depends on another's defaults. */
 const QUIET_BASE = {
+  // 2026-11-18：memberQueryEnabled 的 schema 默认改成了 false（隐私审计：群名册暴露全群 QQ 号）。
+  // 这个套件测的就是那个功能，所以显式打开；E18 用 false 覆盖它验证"关掉时不注册工具"。
+  memberQueryEnabled: true,
   cwd: dir,
   host: '127.0.0.1',
   port: 0,
