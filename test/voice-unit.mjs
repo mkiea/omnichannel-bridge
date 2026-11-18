@@ -79,5 +79,23 @@ check('V5 ★中文别名（!音色/!试听/!唱）', /'音色':\s*'voice'/.test
 check('V5 ★唱歌不被 ttsMaxChars 截断', /options\.song === true \? 2000/.test(src))
 check('V5 语音结果先发语音再回执', /if \(result\.ok === true && result\.voice\)/.test(src))
 
+
+// ---------- V10. 语音出口必须过出站 DLP（2026-11-17 外部审计 BREAK） ----------
+{
+  /**
+   * 真机形态：同一条回复，文字被 decoy 替换、语音把**原文**交给 TTS 上游。
+   * 判据：`#sendTts` 内部必须有 `outboundGuard.apply`，且**在合成之前**。
+   * 修在函数内部（不是调用点）才盖得住两个入口：自动复读 + `!试听`/`!唱`。
+   */
+  const src = readFileSync(new URL('../lib/bridge.js', import.meta.url), 'utf8')
+  const fnStart = src.indexOf('async #sendTts(')
+  const fnBody = fnStart < 0 ? '' : src.slice(fnStart, fnStart + 3000)
+  check('V10 ★#sendTts 里调了 outboundGuard.apply', /outboundGuard\.apply\(text/.test(fnBody), '')
+  check('V10 apply 在合成之前（不是发完再检查）',
+    fnBody.indexOf('outboundGuard.apply') >= 0 && fnBody.indexOf('outboundGuard.apply') < fnBody.indexOf('#synthVoiceFile'),
+    '')
+  check('V10 被 DLP 拦下时不发（返回 null 分支存在）', /guarded === null[\s\S]{0,80}return/.test(fnBody), '')
+}
+
 console.log(`\n${passed} passed, ${failed} failed`)
 process.exit(failed > 0 ? 1 : 0)

@@ -73,5 +73,22 @@ check('L4 ★运行快照带 login 字段', /login:\s*\{[\s\S]{0,200}configured:
   check('L5 ★不一致 ⇒ 红，并写清两边各是多少', bad?.ok === false && /2002/.test(bad?.detail ?? '') && /1001/.test(bad?.detail ?? ''), bad?.detail)
 }
 
+
+// ---------- L6. 查不到登录号时不许把整条链路变哑（2026-11-17 外部审计 BREAK） ----------
+{
+  /**
+   * 真机形态：`botQqAllowed` 非空 + 后端不实现 `get_login_info`
+   * ⇒ `botUnauthorized` 永远是 `undefined` ⇒ 原实现**无条件拒**，每条消息都被吞，
+   * 用户侧零提示。而 W⑥ 的判据是「查不到号 ≠ 未授权」—— 两者自相矛盾。
+   *
+   * 判据：源码里必须存在「连续失败 N 次后放行」这条路径，且 N 是有限值。
+   * （行为级测试要起真 bridge + 假后端，见 TODO；这里先钉住"这条路径存在且不是死循环"）
+   */
+  const src = readFileSync(new URL('../lib/bridge.js', import.meta.url), 'utf8')
+  check('L6 身份闸门有"失败 N 次后放行"的路径', /loginProbeFailures\)\s*\|\|\s*0\)\s*<\s*\d+/.test(src), '')
+  check('L6 放行时留一次日志（不静默）', /login probe failed 3\+ times/.test(src), '')
+  check('L6 明确不在名单仍然拒（没把安全判据改掉）', /botUnauthorized === undefined/.test(src), '')
+}
+
 console.log(`\n${passed} passed, ${failed} failed`)
 process.exit(failed > 0 ? 1 : 0)

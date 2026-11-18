@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 /** Unit tests for image-gen request builders and response parsing (no network). */
 import { buildOpenaiImageRequest, parseOpenaiImageResponse, buildLocalTxt2ImgRequest } from '../lib/imagegen.js'
 
@@ -46,6 +47,21 @@ check('local 缺省 512x512/20/7', localDefault.width === 512 && localDefault.he
 
 const localBad = buildLocalTxt2ImgRequest({ imageGenSize: 'invalid', imageGenSteps: 0, imageGenCfgScale: 0 }, 'p')
 check('local 非法参数兜底', localBad.width === 512 && localBad.height === 512 && localBad.steps === 20 && localBad.cfg_scale === 7)
+
+
+// ---------- S. 下载路径必须走出网守卫（2026-11-17 外部审计 BREAK 回归） ----------
+{
+  /**
+   * 判据是**源码级**的：`parsed.url` 是 provider 返回的外部字符串，
+   * 它绝不能被裸 `fetch` 接走 —— 那等于把 SSRF 判据（egressVerdict）绕过去。
+   * 这条不测行为（要真起服务），只钉住"没有裸 fetch 这条路径"。
+   */
+  const src = readFileSync(new URL('../lib/imagegen.js', import.meta.url), 'utf8')
+  check('S1 生图下载不走裸 fetch(parsed.url)', !/fetch\(\s*parsed\.url/.test(src), '')
+  check('S2 生图下载走 fetchGuarded', /fetchGuarded\(parsed\.url/.test(src), '')
+  check('S3 下载有大小上限', /fetchGuarded\(parsed\.url[^)]*maxBytes/.test(src), '')
+  check('S4 用了 allowAnyHost（provider 可能在白名单外，但内网 IP 仍被 egress 拦）', /allowAnyHost:\s*true/.test(src), '')
+}
 
 console.log(`\n${passed} passed, ${failed} failed`)
 process.exit(failed > 0 ? 1 : 0)
