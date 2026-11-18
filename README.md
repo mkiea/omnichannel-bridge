@@ -1090,6 +1090,7 @@ node tools/sync-runtime.mjs --check    # 一份活副本时：如实说"无事�
 - **[docs/DEBUG.md](docs/DEBUG.md)** —— 调试 / 排障：trace、离线回放、事件注入、一键体检、诊断包、硬约束验收台
 - **[docs/FEATURES.md](docs/FEATURES.md)** —— v0.5 能力细节：合并转发展开、`/文件` `/取` `/相册` `/ocr`、按天归档与 `/找`、群成员与群信息、表情反应
 - **[docs/REDTEAM.md](docs/REDTEAM.md)** —— **红蓝对抗手册**：资产清单、五类攻击者画像、J–T 组 64 条攻击 + **X 组 6 条拆分/契约类**（每条带客观判据）、22 条防线台账、13 项已知缺口。想让别人帮你打，就把这份给他
+- **[docs/PRIVACY-HANDOFF.md](docs/PRIVACY-HANDOFF.md)** —— **隐私方向的作业说明**：给外部审计者查"该藏却露"的东西。六种形态**每种怎么查**、什么算/不算泄露、输出格式（原文要占位符化）、三条禁令。**隐私泄露静态就能查**——不需要真机，这正是适合外部 AI 的地方
 - **[docs/PRIVACY.md](docs/PRIVACY.md)** —— **隐私泄露手册**：五类隐私分级、**六种泄露形态**（内容/文件名/注释/白名单/提交历史/契约不一致）、两道闸的判据、处置流程、已知遗留。**这本来是 REDTEAM 的补充**：那本讲怎么打穿功能，这本讲怎么把不该公开的东西漏出去——后者无异常、不可逆
 - **[docs/VOICE-AND-SINGING.md](docs/VOICE-AND-SINGING.md)** —— **唱歌与音色**：念唱／SVS（DiffSinger）／翻唱（so-vits-svc·RVC）三条路线怎么选、零样本克隆四档做法与显存/许可对照、为什么云 TTS 普遍不能唱，以及 8GB 卡上的落地建议
 
