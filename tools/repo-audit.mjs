@@ -147,6 +147,21 @@ function scan() {
         if (re.test(text)) hits.push({ file, kind: label, level: 'red', detail: '正文命中研究词汇', line: lineOf(text, text.search(re)) })
       }
     }
+    /**
+     * ⑦ **手工掩码**：`375****415` 这种"数字+星号+数字"。
+     *
+     * 2026-11-18 隐私审计的 P-02/P-03/P-04 全落在这里：`3\d{9}` 要求连续 10 位，
+     * `*` 一打断就漏。但它**不是脱敏** —— 露 6/10 位、搜索空间 10⁴，配合语境等于明文。
+     *
+     * 只报 🟡：这类形态和"占位符"（`1234****5678`）在文本上无法区分，拦住会大量误报。
+     * 它的价值是**提醒审计者人工看一眼**，不是在 CI 里卡住。
+     */
+    if (!isAllowed(file)) {
+      const masked = /\d{3,}\*{2,}\d{3,}/.exec(text)
+      if (masked) {
+        hits.push({ file, kind: '手工掩码（疑似）', level: 'yellow', detail: masked[0], line: lineOf(text, masked.index) })
+      }
+    }
     for (const [re, label] of SECRET_PATTERNS) {
       const g = new RegExp(re.source, re.flags)
       for (const m of text.matchAll(g)) {

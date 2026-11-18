@@ -97,5 +97,20 @@ check('V5 语音结果先发语音再回执', /if \(result\.ok === true && resul
   check('V10 被 DLP 拦下时不发（返回 null 分支存在）', /guarded === null[\s\S]{0,80}return/.test(fnBody), '')
 }
 
+
+// ---------- V11. 云端转写必须走出网守卫（2026-11-17 附录 B，11-18 补修） ----------
+{
+  /**
+   * 那个请求**带着 `Authorization: Bearer sttApiKey`** 和整段音频 ——
+   * 与 V⑥（ttsBaseUrl 无白名单）同构：可配置的 host + 密钥外发。
+   */
+  const src = readFileSync(new URL('../lib/bridge.js', import.meta.url), 'utf8')
+  const start = src.indexOf('async #transcribeViaCloud')
+  const body = start < 0 ? '' : src.slice(start, start + 2000)
+  check('V11 ★转写走 fetchGuarded', /await fetchGuarded\(url/.test(body), '')
+  check('V11 不走裸 fetch', !/await fetch\(url/.test(body), '')
+  check('V11 把 sttBaseUrl 的 host 放进 extra（用户显式配置的服务）', /extra:\s*sttHost/.test(body), '')
+}
+
 console.log(`\n${passed} passed, ${failed} failed`)
 process.exit(failed > 0 ? 1 : 0)
