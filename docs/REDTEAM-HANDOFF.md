@@ -112,7 +112,7 @@ node tools/verify.mjs --quick     # 期望 5 关全过（约 32 秒）
 
 ## 8. 怎么把仓库交出去（给对方的人看）
 
-这个仓库是**公开的**（`github.com/mkiea/qq-integration`），所以：
+这个仓库是**公开的**（`github.com/mkiea/omnichannel-bridge`），所以：
 
 1. **给链接 + 三份文档**（`REDTEAM.md` / `PRIVACY.md` / 本文件）就够，不必打包 ——
    上一轮（`AUDIT-2026-10-31.md`）是打包 zip 发的，那时仓库还没公开。

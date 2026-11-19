@@ -185,7 +185,7 @@ const versionBullets = [...readme.matchAll(/^- \*\*v([0-9.]+)\*\* —/gm)].map((
 check('README 更新日志 1–5 版（滚动）', versionBullets.length >= 1 && versionBullets.length <= 5, versionBullets.join(','))
 check('README 首版为当前版本', versionBullets[0] === pkg.version, `${versionBullets[0]} vs ${pkg.version}`)
 /**
- * ★ v0.7.3：包必须导出 `dsh-qq-onebot-bridge/extension`。
+ * ★ v0.7.3：包必须导出 `omnichannel-bridge/extension`。
  *   没有这条 exports 时，第三方只能靠 `file://` 绝对路径去 import 桥的 `lib/extension.js`
  *   （issue #4 作者的三个包就是这么绕的，还写了 `QQBRIDGE_EXT_PATH` 环境变量兜底）。
  *   这条断言防止有人手滑把入口删掉、又一次让外部使用者退回去写绝对路径。

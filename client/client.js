@@ -12,13 +12,13 @@
  * 不引第三方 UI 库（只用 react），样式全走 DSH 主题变量，所以深浅色都跟原生一致。
  */
 window.__ModuleLoader__.load({
-  id: 'dsh-qq-onebot-bridge',
+  id: 'omnichannel-bridge',
   factory: (require) => {
     // ⚠️ 平台契约（v0.6 真机事故的教训）：客户端 bundle 是用**经典 <script>** 注入的，
     // 页面里没有 `exports` / `module`——每个 bundle 都得像平台自己的 bundle 那样自带这两行
     // CJS 垫片；而加载器只把 `factory(require)` 的**返回值**当作模块导出
     // （见 dsh-client-modules/lib/client.js:683）。少了这两行，宿主启动就会
-    // 直接报 `dsh-qq-onebot-bridge: import failed: exports is not defined` 而整个起不来。
+    // 直接报 `omnichannel-bridge: import failed: exports is not defined` 而整个起不来。
     var module = { exports: {} }
     var exports = module.exports
 

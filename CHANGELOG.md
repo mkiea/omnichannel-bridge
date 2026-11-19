@@ -1,5 +1,31 @@
 # 更新日志 / Changelog
 
+### v0.2.0（2026-11-19）— 改名：`omnichannel-bridge`
+
+> 只改名与目录，功能一行没动（`verify` 140 绿 / 1 既有红，`doctor` 15 PASS / 0 FAIL）。
+
+**改了什么**
+
+| 项 | 旧 | 新 |
+|---|---|---|
+| npm 包名 | `dsh-qq-onebot-bridge` | **`omnichannel-bridge`** |
+| 仓库/目录 | `qq-integration` | **`omnichannel-bridge`** |
+| 插件 id（`cordis.patch.yml`） | `dsh-qq-onebot-bridge` | **`omnichannel-bridge`** |
+| 宿主 `link:` 依赖 | `.../qq-integration` | **`.../omnichannel-bridge`** |
+| 符号链接 | `node_modules/dsh-qq-onebot-bridge` | **`node_modules/omnichannel-bridge`** |
+
+**为什么改**
+
+原名绑死了三件事：平台（QQ）、协议（OneBot）、宿主（dsh）。但这套东西的本质是**桥**——
+平台可以换（B 站等）、协议可以换（v11 之外还有 Milky）、宿主可以换（DSH 只是最方便的一个）。
+新名字只承诺"能桥"，不承诺"支持哪些"。
+
+**升级注意（0.1.x → 0.2.0 不兼容）**
+
+1. **插件 id 变了**，旧 profile 的 `cordis.patch.yml` 里那条要手动改成 `omnichannel-bridge`
+2. **目录名变了**，旧的 `link:` 依赖路径要跟着改，否则宿主找不到包
+3. **没有数据格式变化**，`qq-*.jsonl` / 配置 / 白名单都兼容
+
 ### v0.1.0（2026-11-07）— 首个正式版
 
 > **tag：`v0.1.0`**。第一个对外发布的版本（此前只有本地 tag，没有下载页）。
@@ -242,7 +268,7 @@ Waylay / DSH 宿主 / 可选本地语音的结果。`--start-all` 调的是面�
 `df1b4f5` + `ad2efb9`：`launcher/make-shortcut.ps1` 用 `GetFolderPath('Desktop')` +
 `WScript.Shell CreateShortcut` 写固定名 `QQ 集成接入.lnk`（幂等、失败只报错不阻断启动、
 Save 后读回核对 Target/WorkingDir/Icon）；`一键启动.bat` 在体检后插 `[2/3] Desktop shortcut`；
-安装脚本也建一次。图标 `launcher/qq-integration.ico` 7 帧（16–256），深底圆角 + 双向箭头。
+安装脚本也建一次。图标 `launcher/omnichannel-bridge.ico` 7 帧（16–256），深底圆角 + 双向箭头。
 两条编码红线也钉进测试：**ps1 必须 UTF-8 BOM**（PS 5.1 按 ANSI 读无 BOM 的 UTF-8），
 **bat 必须无 BOM**（否则第一行不是 `@echo off`）。
 
@@ -508,7 +534,7 @@ profile patch 读不到 / 读坏了**当没配**（控制台不能因为配置�
 
 **⑬ 推到自己的仓库：把"集成关系"写成可核对的事实（2026-10-31）**
 
-仓库：`https://github.com/mkiea/qq-integration`（`main`）。
+仓库：`https://github.com/mkiea/omnichannel-bridge`（`main`）。
 
 这次不是加功能，是把**对外身份**补齐——之前几处会让人误解本包是什么：
 
@@ -536,7 +562,7 @@ profile patch 读不到 / 读坏了**当没配**（控制台不能因为配置�
 
 用户原话：「跟 forge 一样吧」。profile 的依赖从
 `git+https://github.com/cheesehaqi/dsh-qq-onebot-bridge.git` 改成
-`link:C:/Users/<你>/Desktop/chat role/qq-integration`；
+`link:C:/Users/<你>/Desktop/chat role/omnichannel-bridge`；
 `pnpm-lock.yaml` 里那条 pin 在 `#c59ca8f` 的记录随之消失，`pnpm-workspace.yaml` 里带提交号的
 `allowBuilds` 旧条目一并删掉。
 
@@ -3007,7 +3033,7 @@ format=json         qzreferrer=https://user.qzone.qq.com/<uin>/main
 
 - GitHub 上**旧 commit 对象可能仍能按 SHA 直接访问**，直到它自己 GC；要立刻清得联系 GitHub Support。
 - 之前 clone / fork 过的副本**仍然有**，只能各自重克隆。
-- 本机 `Desktop/chat role/qq-integration-mirror-backup.git` 是重写前的完整镜像（含原号），
+- 本机 `Desktop/chat role/omnichannel-bridge-mirror-backup.git` 是重写前的完整镜像（含原号），
   留着当回滚点，**不要 push 到任何远端**。
 
 **⊕¹⁷ 聊天记录（合并转发）终于通了：内核要的是真 msgId + 真 peer（2026-11-02 深夜）**

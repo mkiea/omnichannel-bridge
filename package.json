@@ -1,16 +1,16 @@
 {
-  "name": "dsh-qq-onebot-bridge",
+  "name": "omnichannel-bridge",
   "version": "0.1.0",
-  "description": "QQ 集成接入（qq-integration）：把 OneBot v11 实现（内置 Waylay 拉起）接到 DSH agent 的双向桥插件，控制台为独立进程（127.0.0.1:8880）",
+  "description": "全渠道桥：把同一个角色接到多个平台（QQ / B 站 / …）的双向桥。宿主无关——DSH 只是最方便的一个适配，也可接任意 agent 框架。",
   "type": "module",
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mkiea/qq-integration.git"
+    "url": "git+https://github.com/mkiea/omnichannel-bridge.git"
   },
-  "homepage": "https://github.com/mkiea/qq-integration#readme",
+  "homepage": "https://github.com/mkiea/omnichannel-bridge#readme",
   "bugs": {
-    "url": "https://github.com/mkiea/qq-integration/issues"
+    "url": "https://github.com/mkiea/omnichannel-bridge/issues"
   },
   "bin": {
     "qq-control": "./control/bin/qq-control.mjs"
@@ -46,23 +46,12 @@
     "LICENSE"
   ],
   "keywords": [
-    "dsh",
-    "deepseek-harness",
-    "cordis",
-    "qq",
-    "onebot",
-    "onebot-v11",
-    "waylay",
-    "napcat",
-    "integration",
     "bridge",
-    "speech-to-text",
-    "asr",
-    "debuggable",
-    "tracing",
-    "replay",
-    "observability",
-    "control-console"
+    "onebot",
+    "omnichannel",
+    "qq",
+    "bilibili",
+    "agent"
   ],
   "dsh": {
     "bundle": {

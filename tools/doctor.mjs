@@ -27,7 +27,7 @@ import { describeStamp, readVersionStamp } from '../lib/version-stamp.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '..')
-const PLUGIN_NAME = 'dsh-qq-onebot-bridge'
+const PLUGIN_NAME = 'omnichannel-bridge'
 
 const argv = new Set(process.argv.slice(2))
 const AS_JSON = argv.has('--json')

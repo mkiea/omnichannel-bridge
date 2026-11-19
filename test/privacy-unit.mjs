@@ -27,7 +27,7 @@ function check(name, ok, extra = '') {
   else { failed++; console.log('FAIL', name, extra) }
 }
 
-const SALT = 'dsh-qq-onebot-bridge/privacy-guard/v1'
+const SALT = 'omnichannel-bridge/privacy-guard/v1'
 const hash = (value) => createHash('sha256').update(`${SALT}:${value}`).digest('hex')
 
 /**
@@ -63,7 +63,7 @@ export function collectPrivateIdKinds({ env = process.env, home = homedir(), rea
     // 只认键名像"人/群"的行（qq/uin/user/admin/owner/group/chat/notify/friend），
     // 且值必须本身就是数字或数字列表——否则会把「字节上限」这类默认值
     // （`fileSendMaxBytes` 的五十兆）当成 QQ 号收进来（第一版就踩了，套件立刻误报 5 处）。
-    const block = /(?:^|\n)\s*-\s*id:\s*dsh-qq-onebot-bridge\s*\n([\s\S]*?)(?=\n\s*-\s*id:|\s*$)/.exec(text)
+    const block = /(?:^|\n)\s*-\s*id:\s*omnichannel-bridge\s*\n([\s\S]*?)(?=\n\s*-\s*id:|\s*$)/.exec(text)
     if (block) {
       for (const raw of block[1].split(/\r?\n/)) {
         const line = raw.replace(/#.*$/, '')

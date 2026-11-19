@@ -36,8 +36,8 @@ const home = mkdtempSync(join(tmpdir(), 'setup-http-'))
 const profileDir = join(home, 'profiles', 'web')
 mkdirSync(profileDir, { recursive: true })
 const patchPath = join(profileDir, 'cordis.patch.yml')
-writeFileSync(patchPath, `- id: dsh-qq-onebot-bridge
-  name: dsh-qq-onebot-bridge
+writeFileSync(patchPath, `- id: omnichannel-bridge
+  name: omnichannel-bridge
   config:
     botQq: 100000001
     allowUsers: [100000002]

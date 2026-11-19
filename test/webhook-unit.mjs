@@ -17,7 +17,7 @@ function check(name, ok, extra = '') {
 }
 
 // ---------------------------------------------------------------- helpers ----
-const REPO = { full_name: 'cheesehaqi/dsh-qq-onebot-bridge', name: 'dsh-qq-onebot-bridge', html_url: 'https://github.com/cheesehaqi/dsh-qq-onebot-bridge' }
+const REPO = { full_name: 'cheesehaqi/omnichannel-bridge', name: 'omnichannel-bridge', html_url: 'https://github.com/cheesehaqi/omnichannel-bridge' }
 
 /** 起一个临时监听拿到空闲高位端口后关掉（避免硬编码端口撞车）。 */
 function freePort() {
@@ -72,7 +72,7 @@ check('pickPath 保留 null 与假值', pickPath({ a: { b: null } }, 'a.b') === 
 // -------------------------------------------------- renderWebhook github ----
 const pushText = renderWebhook(
   { name: 'gh', format: 'github' },
-  gh({ ref: 'refs/heads/main', commits: [{ id: 'a' }, { id: 'b' }, { id: 'c' }], pusher: { name: 'cheesehaqi' }, compare: 'https://github.com/cheesehaqi/dsh-qq-onebot-bridge/compare/x' }),
+  gh({ ref: 'refs/heads/main', commits: [{ id: 'a' }, { id: 'b' }, { id: 'c' }], pusher: { name: 'cheesehaqi' }, compare: 'https://github.com/cheesehaqi/omnichannel-bridge/compare/x' }),
 ).text
 check('github push 标题与仓库名', pushText.includes('📦') && pushText.includes('新推送') && pushText.includes(REPO.full_name), pushText.split('\n')[0])
 check('github push 分支与提交数', pushText.includes('main') && pushText.includes('3 个提交'), pushText)
@@ -84,13 +84,13 @@ const pushNoEvent = renderWebhook({ name: 'gh', format: 'github' }, gh({ ref: 'r
 check('github push 靠 commits 结构特征识别', pushNoEvent.includes('新推送') && pushNoEvent.includes('dev'), pushNoEvent)
 check('github push 无 commits 时提交数为 0', pushNoEvent.includes('0 个提交'), pushNoEvent)
 
-const prText = renderWebhook({ name: 'gh', format: 'github' }, gh({ action: 'opened', pull_request: { number: 42, title: '加 webhook', html_url: 'https://github.com/cheesehaqi/dsh-qq-onebot-bridge/pull/42' } })).text
+const prText = renderWebhook({ name: 'gh', format: 'github' }, gh({ action: 'opened', pull_request: { number: 42, title: '加 webhook', html_url: 'https://github.com/cheesehaqi/omnichannel-bridge/pull/42' } })).text
 check('github PR 靠 pull_request 结构特征识别', prText.includes('PR #42') && prText.includes('新开'), prText)
 check('github PR 标题与链接', prText.includes('加 webhook') && prText.includes('/pull/42'), prText)
 const mergedText = renderWebhook({ name: 'gh', format: 'github' }, gh({ action: 'closed', pull_request: { number: 7, title: 'x', merged: true } })).text
 check('github PR 关闭动作用中文', mergedText.includes('关闭'), mergedText)
 
-const issueText = renderWebhook({ name: 'gh', format: 'github' }, { action: 'opened', repository: REPO, issue: { number: 9, title: '登录报错', html_url: 'https://github.com/cheesehaqi/dsh-qq-onebot-bridge/issues/9', user: { login: 'zhangsan' } }, sender: { login: 'zhangsan' } }).text
+const issueText = renderWebhook({ name: 'gh', format: 'github' }, { action: 'opened', repository: REPO, issue: { number: 9, title: '登录报错', html_url: 'https://github.com/cheesehaqi/omnichannel-bridge/issues/9', user: { login: 'zhangsan' } }, sender: { login: 'zhangsan' } }).text
 check('github issues 靠 issue 结构特征识别', issueText.includes('议题 #9') && issueText.includes('登录报错'), issueText)
 check('github issues 提交人', issueText.includes('提交人 zhangsan'), issueText)
 const issueNoSender = renderWebhook({ name: 'gh', format: 'github' }, { repository: REPO, issue: { number: 10, title: 'T', user: { login: 'lisi' } } }).text

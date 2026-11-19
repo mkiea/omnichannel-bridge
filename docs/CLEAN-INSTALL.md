@@ -18,11 +18,11 @@
 | 步骤 | 真实产物 / 判据 |
 |---|---|
 | 下载 QQ | `QQ_9.9.36_260924_x64_01.exe` 330,446,512 B；`/S` 静默安装 `RC=0`；版本 `9.9.36.53644-aff854e8` |
-| 下载部署包 | `qq-integration-deploy.zip` 8,230,058 B / 3,409 条目；解压 3,397 文件 |
+| 下载部署包 | `omnichannel-bridge-deploy.zip` 8,230,058 B / 3,409 条目；解压 3,397 文件 |
 | 下载 Waylay 运行时 | `rin-inject.zip` 186,479 B / 57 条目（含 `waylay-src/`、`shell/` 三个注入原语、`node_modules/ws`） |
 | Node | 官方便携 `node-v24.22.2-win-x64.zip` 37,754,834 B → `node -v = v24.22.2` |
 | DSH | `npm i -g @deepseek-ai/dsh@0.2.2-rc.1`：`NPM_FINISH_SEC=598.9`、`changed 652 packages in 10m` |
-| 插件注册 | `WEB_DEPS=dsh-qq-onebot-bridge`；`WEB_BUNDLES=...`；`cordis.patch.yml` 217 B 最小模板 |
+| 插件注册 | `WEB_DEPS=omnichannel-bridge`；`WEB_BUNDLES=...`；`cordis.patch.yml` 217 B 最小模板 |
 | 起宿主 | `PORT_3080=1`、`PORT_6700=1` |
 | 起 Waylay | `PORT_13000=1`、`PORT_6701=1`、`PORT_6099=0`、`WS_6700_CONNS=2`、`QQ_PROCESSES=3` |
 | 日志证据 | `[onebot] Reverse WS connected to ws://127.0.0.1:6700/`、`[bridge] Login service connected, waiting for login...`、`[ui] login QR → http://0.0.0.0:13000/qrcode` |
@@ -71,7 +71,7 @@ VM 初始 Node 22.14.0 下，`--help / -h / version / plugin / --version / web -
 所以本次用了与宿主验证过的 9.9.36 安装包。
 
 ### ⑤ 部署包里没有启动器 / Waylay 运行时
-【事实】第一版 `qq-integration-deploy.zip` 3,409 条目里：
+【事实】第一版 `omnichannel-bridge-deploy.zip` 3,409 条目里：
 `rin-waylay.bat` 0、`rin-launch.bat` 0、`rin-loader.js` 0、`waylay-src` 0、
 `NapCatWinBoot*` 0、`launcher` 0；唯一的 `.bat` 是 `control/启动控制台.bat`，
 而它只起 8880 控制台。README 写「Waylay 本体与注入 DLL（由用户自行安装）」，
@@ -111,7 +111,7 @@ Waylay 运行时作为**单独的发行件**随发行版提供（不塞进仓库
 ## 4. 最小配置片段（占位数字，别直接抄去用）
 
 ```yaml
-- id: dsh-qq-onebot-bridge
+- id: omnichannel-bridge
   config:
     botQq: 100000001          # 机器人 QQ 号
     allowUsers: [100000001]   # 你自己的号；空列表 = 全部拒绝

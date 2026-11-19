@@ -241,8 +241,8 @@ check('快照没有 fileValues 时 pending 一律 false（不假装知道配置�
   flat.every((row) => row.pending === false && row.fileValue === null))
 
 const PATCH = `# 顶部注释
-- id: dsh-qq-onebot-bridge
-  name: dsh-qq-onebot-bridge
+- id: omnichannel-bridge
+  name: omnichannel-bridge
   config:
     cwd: /work/qq-bridge
     ttsEnabled: true
@@ -317,18 +317,18 @@ check('upsert 把空字符串写成 \'\'（留空在 YAML 里是 null，宿主�
     upsertPatchValue(PATCH, 'chatTurnsPerMinute', 3.5).ok === false)
   check('readPatchValue 不会把布尔读成数字、也不会把引号里的数字当数字',
     readPatchValue('    ttsEnabled: true\n', 'ttsEnabled') === null
-    && readPatchValue('- id: dsh-qq-onebot-bridge\n  config:\n    n: "7"\n', 'n') === null)
+    && readPatchValue('- id: omnichannel-bridge\n  config:\n    n: "7"\n', 'n') === null)
 }
 /**
  * ★ v0.6.8 真机修复：插件可以作为 `dsh.profile.bundles` 成员挂载（挂载声明在**包自带 bundle 层**），
  * 这时 profile 的 `cordis.patch.yml` 里一条本插件条目都没有 —— 以前点任何开关都报
- * "没有 dsh-qq-onebot-bridge 条目"，现在必须**追加一条**（patch 的用途就是按 id 覆盖/追加）。
+ * "没有 omnichannel-bridge 条目"，现在必须**追加一条**（patch 的用途就是按 id 覆盖/追加）。
  */
 const noEntry = upsertPatchValue('- id: other\n  config:\n    a: 1\n', 'ttsEnabled', true)
 check('★upsert：patch 里没有本插件条目时**追加一条**（原有条目一字不动）',
   noEntry.ok === true && noEntry.changed === true
-  && /^- id: dsh-qq-onebot-bridge$/m.test(noEntry.yaml)
-  && /^\s+name: dsh-qq-onebot-bridge$/m.test(noEntry.yaml)
+  && /^- id: omnichannel-bridge$/m.test(noEntry.yaml)
+  && /^\s+name: omnichannel-bridge$/m.test(noEntry.yaml)
   && /^\s+config:$/m.test(noEntry.yaml) && /^\s{4}ttsEnabled: true$/m.test(noEntry.yaml)
   && noEntry.yaml.startsWith('- id: other\n  config:\n    a: 1\n'),
   brief(noEntry.yaml))
@@ -336,16 +336,16 @@ check('★upsert：追加出来的整份文件仍是合法 YAML（一条数组�
   (() => { try { const doc = YAML.parse(noEntry.yaml); return Array.isArray(doc) && doc.length === 2 } catch { return false } })(),
   brief(noEntry.yaml))
 check('★upsert：空文件 / 只有注释 / 空的 [] 都能写出条目',
-  upsertPatchValue('', 'ttsEnabled', true).ok === true && /^- id: dsh-qq-onebot-bridge$/m.test(upsertPatchValue('', 'ttsEnabled', true).yaml)
+  upsertPatchValue('', 'ttsEnabled', true).ok === true && /^- id: omnichannel-bridge$/m.test(upsertPatchValue('', 'ttsEnabled', true).yaml)
   && upsertPatchValue('# 只有注释\n', 'ttsEnabled', true).ok === true
   && upsertPatchValue('[]\n', 'ttsEnabled', true).ok === true
   && !upsertPatchValue('[]\n', 'ttsEnabled', true).yaml.includes('[]'),
   brief(upsertPatchValue('[]\n', 'ttsEnabled', true).yaml))
 check('★upsert：不是条目数组的 patch 仍然如实拒绝（不猜结构）',
   upsertPatchValue('plugins:\n  a: 1\n', 'ttsEnabled', true).ok === false)
-const noConfig = upsertPatchValue('- id: dsh-qq-onebot-bridge\n  name: dsh-qq-onebot-bridge\n', 'ttsEnabled', true)
+const noConfig = upsertPatchValue('- id: omnichannel-bridge\n  name: omnichannel-bridge\n', 'ttsEnabled', true)
 check('★upsert：条目存在但没有 config 块时补一个（不重复加条目）',
-  noConfig.ok === true && (noConfig.yaml.match(/- id: dsh-qq-onebot-bridge/g) || []).length === 1
+  noConfig.ok === true && (noConfig.yaml.match(/- id: omnichannel-bridge/g) || []).length === 1
   && /^\s+config:$/m.test(noConfig.yaml) && /^\s{4}ttsEnabled: true$/m.test(noConfig.yaml),
   brief(noConfig.yaml))
 
@@ -354,7 +354,7 @@ const parseYaml = (text) => {
   try { return { doc: YAML.parse(text), error: null } } catch (error) { return { doc: null, error: error.message } }
 }
 // R1：4 空格缩进的合法 patch（yaml.stringify(…,{indent:4}) 的产物形态）不许被写成非法 YAML
-const fourSpace = '-   id: dsh-qq-onebot-bridge\n    config:\n        ttsEnabled: true\n        port: 6700\n-   id: other\n    config:\n        a: 1\n'
+const fourSpace = '-   id: omnichannel-bridge\n    config:\n        ttsEnabled: true\n        port: 6700\n-   id: other\n    config:\n        a: 1\n'
 const r1 = upsertPatchValue(fourSpace, 'ttsEnabled', false)
 check('R1 4 空格缩进：写回仍是合法 YAML 且缩进不变、兄弟键还在',
   r1.ok === true && parseYaml(r1.yaml).error === null
@@ -363,7 +363,7 @@ check('R1 4 空格缩进：写回仍是合法 YAML 且缩进不变、兄弟键�
 // R2：多行字符串里"长得像键"的行不许被当成真键。
 // 关键：字符串内容行必须**真的以 `ttsEnabled:` 开头**（只是缩进不同）——否则"必须正好在子键缩进"
 // 这条判定去掉也测不出来（第一版夹具就是这样，回退矩阵当场证明它没覆盖）。
-const blockScalar = '- id: dsh-qq-onebot-bridge\n  config:\n    welcomeTemplate: |\n      ttsEnabled: false\n      第二行\n    ttsEnabled: true\n'
+const blockScalar = '- id: omnichannel-bridge\n  config:\n    welcomeTemplate: |\n      ttsEnabled: false\n      第二行\n    ttsEnabled: true\n'
 const r2 = upsertPatchValue(blockScalar, 'ttsEnabled', false)
 check('R2 多行字符串：内容没被动、真键被改、YAML 仍合法',
   parseYaml(r2.yaml).error === null && r2.yaml.includes('\n      ttsEnabled: false\n')
@@ -371,14 +371,14 @@ check('R2 多行字符串：内容没被动、真键被改、YAML 仍合法',
 check('R2b 多行字符串：读的时候也不被伪键骗到（只剩字符串那一行时必须返回 null）',
   readPatchValue(blockScalar.replace('    ttsEnabled: true\n', ''), 'ttsEnabled') === null)
 // R3：CRLF 下同值写入必须幂等，且新行不混排行尾
-const crlfPatch = '- id: dsh-qq-onebot-bridge\r\n  config:\r\n    ttsEnabled: true\r\n'
+const crlfPatch = '- id: omnichannel-bridge\r\n  config:\r\n    ttsEnabled: true\r\n'
 check('R3a CRLF：同值写入幂等（changed=false，文本一字不动）',
   upsertPatchValue(crlfPatch, 'ttsEnabled', true).changed === false)
 const r3 = upsertPatchValue(crlfPatch, 'diceEnabled', true)
 check('R3b CRLF：新增行后仍全是 CRLF（不混排）',
   r3.yaml.includes('\r\n') && !/[^\r]\n/.test(r3.yaml), JSON.stringify(r3.yaml.slice(-30)))
 // R4：同名条目多条时改**最后一条**（DSH 的 dsh-plugin-manager 用 findLast）
-const dupEntries = '- id: dsh-qq-onebot-bridge\n  config:\n    ttsEnabled: true\n- id: dsh-qq-onebot-bridge\n  config:\n    ttsEnabled: true\n'
+const dupEntries = '- id: omnichannel-bridge\n  config:\n    ttsEnabled: true\n- id: omnichannel-bridge\n  config:\n    ttsEnabled: true\n'
 const r4 = upsertPatchValue(dupEntries, 'ttsEnabled', false)
 const r4doc = parseYaml(r4.yaml).doc
 check('R4 重复条目：改的是最后一条，读的也是最后一条',
@@ -386,12 +386,12 @@ check('R4 重复条目：改的是最后一条，读的也是最后一条',
   && readPatchValue(r4.yaml, 'ttsEnabled') === false,
   JSON.stringify(r4doc?.map((entry) => entry.config?.ttsEnabled)))
 // 新增：config 第一层是列表时**拒绝写入**（此前会写出宿主解析不了的 YAML）
-const sequenceConfig = '- id: dsh-qq-onebot-bridge\n  config:\n    - 10001\n    - 10002\n- id: other\n'
+const sequenceConfig = '- id: omnichannel-bridge\n  config:\n    - 10001\n    - 10002\n- id: other\n'
 const rSeq = upsertPatchValue(sequenceConfig, 'ttsEnabled', true)
 check('序列开头的 config：拒绝写入并说明原因（不产出非法 YAML）',
   rSeq.ok === false && rSeq.yaml === sequenceConfig && rSeq.reason.includes('列表'), rSeq.reason)
 // 新增：带引号 / 带行尾注释的条目 id 也要认（否则会误报"没有这个条目"）
-const quotedId = '- id: "dsh-qq-onebot-bridge" # 本插件\n  config:\n    ttsEnabled: true\n'
+const quotedId = '- id: "omnichannel-bridge" # 本插件\n  config:\n    ttsEnabled: true\n'
 const rQuoted = upsertPatchValue(quotedId, 'ttsEnabled', false)
 check('带引号与行尾注释的条目 id 能认出来',
   rQuoted.ok === true && rQuoted.changed === true && readPatchValue(rQuoted.yaml, 'ttsEnabled') === false,
@@ -865,7 +865,7 @@ check('★空数组可以写（= 不静默任何时段）',
  */
 const blockYaml = [
   'plugins:',
-  '  - id: dsh-qq-onebot-bridge',
+  '  - id: omnichannel-bridge',
   '    config:',
   '      quietHours:',
   '        - "9:00-12:00"',
@@ -1122,7 +1122,7 @@ check('http(s) 的非本机 Origin 一律拒绝', remoteHost.out.status === 403,
 const brokenDir = join(dir, 'profiles', 'broken')
 mkdirSync(brokenDir, { recursive: true })
 const brokenPatch = join(brokenDir, 'cordis.patch.yml')
-const originalBroken = '- id: dsh-qq-onebot-bridge\n  config:\n    ttsEnabled: true\n'
+const originalBroken = '- id: omnichannel-bridge\n  config:\n    ttsEnabled: true\n'
 writeFileSync(brokenPatch, originalBroken, 'utf8')
 const brokenRoutes = []
 const brokenHost = {
@@ -1182,7 +1182,7 @@ check('R9 注册半途失败会回滚已注册的路由（不留半挂状态）'
 // 分层警告：家目录 patch 里也有本插件时，面板必须说明"它盖过 profile 层"。
 const homeDir = join(dir, 'home')
 mkdirSync(homeDir, { recursive: true })
-writeFileSync(join(homeDir, 'cordis.patch.yml'), '- id: dsh-qq-onebot-bridge\n  config:\n    ttsEnabled: true\n', 'utf8')
+writeFileSync(join(homeDir, 'cordis.patch.yml'), '- id: omnichannel-bridge\n  config:\n    ttsEnabled: true\n', 'utf8')
 const warnRoutes = []
 mountQqAiPanel({
   webServer: { register(route) { warnRoutes.push(route); return () => { const at = warnRoutes.indexOf(route); if (at >= 0) warnRoutes.splice(at, 1) } } },
@@ -1705,7 +1705,7 @@ try {
   // eslint-disable-next-line no-new-func
   const run = new Function('window', clientText)
   run(sandboxWindow)
-  check('客户端 bundle 通过 __ModuleLoader__.load 注册', loaded?.id === 'dsh-qq-onebot-bridge', String(loaded?.id))
+  check('客户端 bundle 通过 __ModuleLoader__.load 注册', loaded?.id === 'omnichannel-bridge', String(loaded?.id))
   check('客户端 bundle 自带 CJS 垫片（经典 script 里没有 exports/module）',
     clientText.includes('var module = { exports: {} }') && clientText.includes('var exports = module.exports'),
     '缺少垫片会让宿主启动直接失败')

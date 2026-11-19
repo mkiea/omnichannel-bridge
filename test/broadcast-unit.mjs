@@ -468,7 +468,7 @@ check('weather_code 95 → 雷阵雨', formatWeather({ current: { weather_code: 
   check('RSS 首次播报 ok', first.ok === true, first.reason)
   check('RSS 首次播报发出文本', sent.length === 1 && sent[0].text === '新条目：feed', JSON.stringify(sent[0]))
   check('RSS 请求带 User-Agent',
-    calls[0].init.headers['User-Agent'] === 'dsh-qq-onebot-bridge', JSON.stringify(calls[0].init.headers))
+    calls[0].init.headers['User-Agent'] === 'omnichannel-bridge', JSON.stringify(calls[0].init.headers))
   const signal = calls[0].init.signal
   check('RSS 请求带超时 AbortSignal',
     signal !== undefined && typeof signal.aborted === 'boolean')

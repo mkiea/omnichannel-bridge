@@ -1,8 +1,10 @@
-# qq-integration
+# omnichannel-bridge
 
 A bidirectional QQ ↔ DeepSeek Harness bridge plugin (independent bundle, maintained as our own plugin). QQ messages drive DSH agent sessions directly, and agent replies are sent back to QQ automatically.
 
-> The npm package name `dsh-qq-onebot-bridge` is the DSH host's loading contract (kept as-is); the project identity, folder and releases use "qq-integration".
+> **Renamed 2026-11-19.** Formerly `qq-integration` / npm `dsh-qq-onebot-bridge`.
+> The current name reflects the architecture: one bridge, many platforms, any host —
+> DSH is only the most convenient host, not a requirement.
 > The control console is an **independent process** (`http://127.0.0.1:8880/`, no dsh dependency; start it with `control/bin/qq-control.mjs`).
 
 ### This is an **integration** plugin
@@ -23,7 +25,7 @@ Provenance, license and the exact reuse boundary are documented in [`NOTICE.md`]
 QQ client ←→ OneBot implementation (Waylay [current default] / NapCat / LLOneBot / OpenShamrock / Lagrange…)
                 │ reverse WebSocket (the OneBot side connects to us)
                 ▼
-      dsh-qq-onebot-bridge (this plugin)
+      omnichannel-bridge (this plugin)
                 │ ctx.agents.create / followup
                 ▼
       DSH agent sessions (one per group / per private user)

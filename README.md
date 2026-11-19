@@ -1,8 +1,10 @@
-# qq-integration（QQ 集成接入）
+# omnichannel-bridge（QQ 集成接入）
 
 QQ ↔ DeepSeek Harness 双向桥插件（独立 bundle，自研维护）。QQ 消息直接驱动 DSH agent 会话，agent 回复自动发回 QQ。
 
-> 包名 `dsh-qq-onebot-bridge` 是 dsh 宿主的加载契约（不改）；对外定位、目录与发版以「QQ 集成接入 / qq-integration」为准。
+> **2026-11-19 改名**：原名 `qq-integration` / npm `dsh-qq-onebot-bridge`。
+> 新名 `omnichannel-bridge` 反映的是架构——**一个桥，多平台，任意宿主**：
+> 不只 QQ（B 站等平台可按同一套接入）、DSH 只是最方便的宿主而非必需。
 > 控制台是**独立进程**（`http://127.0.0.1:8880/`，不依赖 dsh，`control/bin/qq-control.mjs` 前台即可启动）。
 
 ### 这是个**集成**插件
@@ -67,7 +69,7 @@ cmd /c mklink /J "<插件目录>\node_modules\@deepseek-ai" "%USERPROFILE%\.dsh\
 ```sh
 # 3) 注册到 profile（`dsh plugin --profile web add <目录>` 会替你做这一步）
 #    写进 ~/.dsh/profiles/web/package.json：
-#      "dsh-qq-onebot-bridge": "link:C:/…/qq-integration"
+#      "omnichannel-bridge": "link:C:/…/omnichannel-bridge"
 dsh plugin --profile web add <本目录>
 ```
 
@@ -137,7 +139,7 @@ dsh plugin --profile <profile> add <本目录>                # 注册进 profil
 装完**必须**确认 `~/.dsh/profiles/web/package.json` 里已经有
 
 ```json
-"dsh": { "profile": { "bundles": ["dsh-qq-onebot-bridge"] } }
+"dsh": { "profile": { "bundles": ["omnichannel-bridge"] } }
 ```
 
 少了这一步，插件只会出现在"已装依赖"里、**不会被加载**（本机实测）。市场安装会自动做。

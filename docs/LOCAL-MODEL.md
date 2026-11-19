@@ -38,8 +38,8 @@ dsh 已经有现成的多提供方适配器：`@deepseek-ai/dsh-llm-pi-ai`，由
 插件有两个配置键：
 
 ```yaml
-- id: dsh-qq-onebot-bridge
-  name: dsh-qq-onebot-bridge
+- id: omnichannel-bridge
+  name: omnichannel-bridge
   config:
     provider: ollama
     model: "qwen2.5:7b"

@@ -246,7 +246,7 @@ check('组级说明写清了"换目录不自动搬数据"与金丝雀必须一�
  */
 const BS = String.fromCharCode(92)
 const SAMPLE_DIR = ['D:', 'qqai', 'qq_chat'].join(BS)
-const yamlBase = '- id: dsh-qq-onebot-bridge\n  config:\n    botQq: 1000000000\n'
+const yamlBase = '- id: omnichannel-bridge\n  config:\n    botQq: 1000000000\n'
 const written = upsertPatchValue(yamlBase, 'dataDir', SAMPLE_DIR)
 const writtenLine = written.ok === true ? (written.yaml.split('\n').find((line) => line.includes('dataDir')) ?? '') : ''
 check('写到 patch 里的路径被单引号包住（裸写会被 YAML 当转义序列，整份 patch 拒载）',
@@ -262,7 +262,7 @@ check('从 patch 里读回来与写入值逐字一致（文本行必须按 `asSt
  * 插件的配置是 profile 的 `cordis.patch.yml`。写错文件的失败**不报错** ——
  * 面板显示一个路径、桥用另一个路径，只有用户翻聊天记录时才发现不对。
  */
-const patchBase = '- id: dsh-qq-onebot-bridge\n  config:\n    botQq: 1000000000\n    allowUsers: [2000000001]\n'
+const patchBase = '- id: omnichannel-bridge\n  config:\n    botQq: 1000000000\n    allowUsers: [2000000001]\n'
 
 /** 造一个只关心"写配置"的 supervisor；`writes` 收下所有落盘内容（默认不真写）。 */
 function writerFor({ patchFile = '', dataRoot = '', runtime = null, readPatch = null, writePatch = null, pickExec = null, platform = null } = {}) {
@@ -330,7 +330,7 @@ const appendWriter = writerFor({ patchFile: patchPath, readPatch: () => otherPat
 const appendResult = appendWriter.sup.setDataDir(emptyTarget)
 check('patch 里没有我们的条目 ⇒ 追加一条，而不是拒绝（否则装成 bundle 的用户点什么都红字）',
   appendResult.ok === true && /some-other-plugin/.test(appendWriter.writes[0]?.text ?? '')
-  && /dsh-qq-onebot-bridge/.test(appendWriter.writes[0]?.text ?? ''),
+  && /omnichannel-bridge/.test(appendWriter.writes[0]?.text ?? ''),
   appendWriter.writes[0]?.text?.slice(0, 120))
 
 // 目标目录里已经有东西 / 金丝雀
@@ -422,7 +422,7 @@ check('控制台推 profile 与 patch 路径（DSH_HOME 优先，缺省 web）',
  */
 const patchHost = join('D:/dshhome', 'profiles', 'web', 'cordis.patch.yml')
 const patchWithDir = [
-  '- id: dsh-qq-onebot-bridge',
+  '- id: omnichannel-bridge',
   '  config:',
   "    dataDir: 'D:\\qqai\\qq_chat'",
   '',
@@ -455,7 +455,7 @@ const noDir = detectPaths({ cwd: 'D:\\qqcwd' }, {
   env: { DSH_HOME: 'D:/dshhome', USERPROFILE: 'D:/home' },
   exists: (p) => p === patchHost,
   readdir: () => [],
-  readFile: () => '- id: dsh-qq-onebot-bridge\n  config:\n    botQq: 1000000000\n',
+  readFile: () => '- id: omnichannel-bridge\n  config:\n    botQq: 1000000000\n',
 })
 check('③ 两处都没配 ⇒ 退回 cwd 兜底，并如实标 source=none（别假装配置好了）',
   noDir.dataDirSource === 'none' && noDir.dataDir === '' && noDir.dataRoot === resolve('D:\\qqcwd'),

@@ -23,8 +23,8 @@ function check(name, ok, detail = '') {
 
 const tmp = mkdtempSync(join(tmpdir(), 'setup-robust-'))
 const patch = join(tmp, 'cordis.patch.yml')
-const YAML_HEAD = `- id: dsh-qq-onebot-bridge
-  name: dsh-qq-onebot-bridge
+const YAML_HEAD = `- id: omnichannel-bridge
+  name: omnichannel-bridge
   config:
     botQq: 100000001
     allowUsers: [100000002]
@@ -104,7 +104,7 @@ console.log('\n--- 二、文件异常（期望：不崩，且能说清原因）-
 
 // 2.4 块存在但键缺失
 {
-  resetYaml('- id: dsh-qq-onebot-bridge\n  config:\n    otherKey: 1\n')
+  resetYaml('- id: omnichannel-bridge\n  config:\n    otherKey: 1\n')
   const v = readSetup(target)
   check('键缺失返回空值', v.botQq === '' && v.allowUsers.length === 0, JSON.stringify(v))
 }
@@ -136,7 +136,7 @@ console.log('\n--- 二、文件异常（期望：不崩，且能说清原因）-
   resetYaml()
   writeSetup(target, { botQq: 100000001, allowUsers: [100000002, 100000003], allowGroups: [], cwd: '' })
   const text = readFileSync(patch, 'utf8')
-  check('写入后 id 行仍存在', text.includes('- id: dsh-qq-onebot-bridge'))
+  check('写入后 id 行仍存在', text.includes('- id: omnichannel-bridge'))
   check('写入后 config 块仍存在', /config:/.test(text))
   const v = readSetup(target)
   check('写入后能读回同一组值', v.botQq === '100000001' && v.allowUsers.length === 2, JSON.stringify(v))
