@@ -47,11 +47,24 @@
   ],
   "keywords": [
     "bridge",
-    "onebot",
     "omnichannel",
+    "multi-platform",
+    "relay",
+    "onebot",
+    "onebot11",
+    "milky",
     "qq",
     "bilibili",
-    "agent"
+    "bili",
+    "im",
+    "chatbot",
+    "agent",
+    "character",
+    "persona",
+    "companion",
+    "dsh",
+    "host-agnostic",
+    "self-hosted"
   ],
   "dsh": {
     "bundle": {
