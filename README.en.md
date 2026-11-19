@@ -13,7 +13,7 @@ It does **not** implement the QQ protocol itself. It wires three things together
 
 | Integrated | What this package provides | What it does **not** contain |
 |---|---|---|
-| **OneBot v11** (protocol layer) | Reverse-WS server, event dispatch, action calls, @ parsing, forward messages — reused from upstream `dsh-qq-onebot-bridge` and maintained here | QQ login, protocol codec, packet I/O (all of that lives in the OneBot implementation) |
+| **OneBot v11** (protocol layer) | Reverse-WS server, event dispatch, action calls, @ parsing, forward messages — reused from upstream `omnichannel-bridge` and maintained here | QQ login, protocol codec, packet I/O (all of that lives in the OneBot implementation) |
 | **A OneBot implementation** (QQ side) | Works with any v11 implementation: Waylay / NapCat / LLOneBot / OpenShamrock / Lagrange / go-cqhttp | No implementation binaries are bundled or redistributed |
 | **Waylay** (current default) | **Built-in** start / stop / status reading (`lib/waylay-launch.js` + `/api/waylay*` + the panel's "Start Waylay") | The Waylay binary and its injection DLL (users install those themselves) |
 
@@ -57,7 +57,7 @@ dsh plugin --profile web add <this-directory>
 
 # uninstall anytime (independent bundle, does not affect other plugins)
 
-dsh plugin --profile web remove dsh-qq-onebot-bridge
+dsh plugin --profile web remove omnichannel-bridge
 ```
 
 Restart `dsh web` after install/uninstall.
@@ -73,10 +73,10 @@ The official desktop client (the Electron `DeepSeek Harness.exe`) boots the `~/.
 Installation is the same, through the desktop client's plugin manager:
 
 1. Desktop client → Settings → Plugins → install, and pick the **local directory** (the directory this plugin lives in — the same path you gave `dsh plugin --profile web add`), or the GitHub repository URL;
-2. configuration goes into `~/.dsh/profiles/desktop/cordis.patch.yml` (the `id: dsh-qq-onebot-bridge` config) — never into the repository;
+2. configuration goes into `~/.dsh/profiles/desktop/cordis.patch.yml` (the `id: omnichannel-bridge` config) — never into the repository;
 3. restart the desktop client.
 
-> When installing a local directory by hand (outside the marketplace), note that the dependency alone is not enough: **`dsh-qq-onebot-bridge` must also be listed in that profile's `package.json` under `dsh.profile.bundles`**, otherwise the loader never mounts it — it shows up as an installed dependency but does nothing (measured on this machine). A marketplace install does this for you.
+> When installing a local directory by hand (outside the marketplace), note that the dependency alone is not enough: **`omnichannel-bridge` must also be listed in that profile's `package.json` under `dsh.profile.bundles`**, otherwise the loader never mounts it — it shows up as an installed dependency but does nothing (measured on this machine). A marketplace install does this for you.
 
 > ⚠️ **Only one instance per machine may host the QQ bridge**: the web host and the desktop client can both install this plugin, but they compete for the same OneBot port (6700 by default) and only one can bind it — the other reports the true reason and **retries every 15 seconds**, taking over automatically once the port is free (it neither crashes nor blocks host startup). **Do not "just give the other profile a different port" to run both**: they share one `cwd` (`qq-sessions.json`, `qq-memory/`, `qq-reminders.json`, points and stats all live there), two instances writing it will clobber each other, and with `injectDryRun:false` queued injections would really be sent twice. To pin one host, **enable the plugin in only one profile** (remove it from the other's `dsh.profile.bundles`), or give it a different `cwd` as well.
 
@@ -101,7 +101,7 @@ After installing the plugin and **restarting the host once** (so the panel route
 
 ## Configuration
 
-Override `id: dsh-qq-onebot-bridge` config in the profile's `cordis.patch.yml` (full example in `examples/cordis.patch.example.yml`):
+Override `id: omnichannel-bridge` config in the profile's `cordis.patch.yml` (full example in `examples/cordis.patch.example.yml`):
 
 > ⚠️ **Do not edit the wrong file**: the repository root also has a `cordis.patch.yml` of the same name, but that one is the **bundle patch used for installation** (four lines, just `insert: - id: …`) — never put configuration in it. Edit the one inside your **profile** instead (e.g. `~/.dsh/profiles/web/cordis.patch.yml`). It lives outside the repository, so **keys written there never reach git**.
 
@@ -327,7 +327,7 @@ ctx.qqBridge.registerToolProvider(({ agentCtx, route, key, config, workspaceRoot
 }), { name: 'my-plugin' })
 
 // ④ no ctx available (load order, out-of-process)? the package now exports an entry — stop hard-coding file:// paths
-import { getExtensionApi } from 'dsh-qq-onebot-bridge/extension'
+import { getExtensionApi } from 'omnichannel-bridge/extension'
 const api = getExtensionApi()
 
 // ⑤ bridge instance id: it changes whenever the host rebuilds the bridge (restart / hot reload / a panel toggle),

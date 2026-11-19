@@ -229,7 +229,7 @@
 | ID | 目标 | 前提 | 手法 | 成功判据 | 现防线 |
 |---|---|---|---|---|---|
 | **T①** | A2 | P5 | 依赖包 postinstall 读 `.env` | 数据外发 | 无（`ws` 是唯一硬依赖，风险面小） |
-| **T②** | A1 | P4 | 把 `node_modules/dsh-qq-onebot-bridge` 的 junction 指向另一个目录 | 宿主加载了攻击者代码 | 无签名校验 → G12 |
+| **T②** | A1 | P4 | 把 `node_modules/omnichannel-bridge` 的 junction 指向另一个目录 | 宿主加载了攻击者代码 | 无签名校验 → G12 |
 | **T③** | A8 | — | 在**空环境**跑 `node tools/doctor.mjs`，看它是否报 PASS | 报 PASS | D22 → 必须 FAIL |
 | **T④** | A6 | P4 | 改完代码不重启，观察是否「看起来生效了」 | 旧进程跑旧代码但面板显示新版本 | 版本号来自代码而非进程 → G13 |
 

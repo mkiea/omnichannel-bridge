@@ -8,7 +8,7 @@
 OneBot 实现（Waylay / NapCat / LLOneBot / OpenShamrock / Lagrange / go-cqhttp）
         │  反向 WebSocket
         ▼
-本插件 dsh-qq-onebot-bridge（OneBot v11 传输层 + 会话编排 + 控制台）
+本插件 omnichannel-bridge（OneBot v11 传输层 + 会话编排 + 控制台）
         │  ctx.agents.create / followup
         ▼
 DSH agent 会话

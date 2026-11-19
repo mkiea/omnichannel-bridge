@@ -1,5 +1,38 @@
 # 更新日志 / Changelog
 
+### v0.2.1（2026-11-19）— 文档按实测重写
+
+> 只改文档，代码零改动。起因：README 还停留在"9.9.37 能注入"的假设上，
+> 而当天实测证明 9.9.37 走不通、9.9.36 才是可用版本。
+
+**新增三节**
+
+| 节 | 为什么加 |
+|---|---|
+| **`## QQ 版本：只支持 9.9.36`** | 原文没写版本边界。实测 9.9.37 的 launcher 硬编码 `app_launcher/index.js`、不看 `main`，注入器伪造的 `qqnt.json` 被忽略 |
+| **`#### 控制台点「启动 Waylay」返回 ok，但 13000 一直不监听`** | 卡了一整天的坑：`rin-launch.bat` 里的裸 `pause` 在 `spawn` 环境下永久等待，95 秒后被进程树清理（`0xC000013A`） |
+| **`#### 从脚本 / 自动化里控制控制台`** | 补上 `/api/*` 的认证方式（`x-control-token` + `Origin`，不是 Bearer）与四个接口的用途 |
+
+**修正**
+
+- 旧插件 id `dsh-qq-onebot-bridge` → `omnichannel-bridge` 共 **16 处**
+  （`README.md` 8 / `README.en.md` 6 / `NOTICE.md` 1 / `docs/REDTEAM.md` 1）
+- `README.md` 第 244 行"启动顺序"补一条：**顺序不严格但有因果**——Waylay 每 5 秒重连 6700，
+  所以先起 Waylay 不会失败；但 6700 一直不在，它永远连不上，`reverseClients` 恒为 0
+
+**保留原名的地方**（历史，不能改）
+
+- `NOTICE.md` 的上游仓库 `cheesehaqi/dsh-qq-onebot-bridge`
+- `CHANGELOG.md` 里 v0.1.x 的旧条目
+- 社区项目引用 `551123/dsh-qq-onebot-bridge`
+
+**当天附带的实测记录**（细节见仓库外的 `计划/犯错墙.md` W-2026-11-19-1~11）
+
+- 9.9.37 + `winmm` V8 通道：10 轮全部失败，`READY hooks=4` 但 `PATCHED` 恒为 0
+- 9.9.36 降级：**注册表 `HKCU\Software\Tencent\QQNT\version` 与 `versions\config.json` 的
+  `curVersion` 必须一致**，否则 `QQNT.dll` 主动 `INT3`（`0x80000003`）
+- 全链路打通判据：`reverseClients > 0`，不是"端口在听"
+
 ### v0.2.0（2026-11-19）— 改名：`omnichannel-bridge`
 
 > 只改名与目录，功能一行没动（`verify` 140 绿 / 1 既有红，`doctor` 15 PASS / 0 FAIL）。

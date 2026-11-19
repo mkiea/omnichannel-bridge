@@ -25,7 +25,7 @@ QQ ↔ DeepSeek Harness 双向桥插件（独立 bundle，自研维护）。QQ �
 QQ 客户端 ←→ OneBot 实现（Waylay〔当前默认〕/ NapCat / LLOneBot / OpenShamrock / Lagrange…）
                   │ 反向 WebSocket（OneBot 连我们；端口 6700）
                   ▼
-        dsh-qq-onebot-bridge（本插件）
+        omnichannel-bridge（本插件）
                   │ ctx.agents.create / followup
                   ▼
         DSH agent 会话（每群/每私聊用户一个）
@@ -45,7 +45,7 @@ QQ 客户端 ←→ OneBot 实现（Waylay〔当前默认〕/ NapCat / LLOneBot 
 ## 安装 / 卸载
 
 本地目录安装走 pnpm 的 `link:`（跟本机 `dsh-forge` 一致）：profile 的
-`node_modules/dsh-qq-onebot-bridge` 是一个**符号链接**，指回插件目录 ⇒ **仓库就是运行时**，改完即生效（重启宿主后）。
+`node_modules/omnichannel-bridge` 是一个**符号链接**，指回插件目录 ⇒ **仓库就是运行时**，改完即生效（重启宿主后）。
 三步，缺一步都会在启动时炸，而且炸法不一样：
 
 ```sh
@@ -73,7 +73,7 @@ cmd /c mklink /J "<插件目录>\node_modules\@deepseek-ai" "%USERPROFILE%\.dsh\
 dsh plugin --profile web add <本目录>
 ```
 
-卸载：`dsh plugin --profile web remove dsh-qq-onebot-bridge`（随时可移除，独立 bundle 不影响其它插件）。
+卸载：`dsh plugin --profile web remove omnichannel-bridge`（随时可移除，独立 bundle 不影响其它插件）。
 
 装/卸后重启 `dsh web` 生效。
 
@@ -89,12 +89,61 @@ dsh plugin --profile web add <本目录>
 其余只是走桌面端的插件管理界面：
 
 1. 桌面端 → 设置 → 插件 → 安装，选**本地目录**（就是本插件所在的目录，也就是 `dsh plugin --profile web add` 时填的那个路径），或直接填 GitHub 仓库地址；
-2. 配置同样写在 `~/.dsh/profiles/desktop/cordis.patch.yml`（`id: dsh-qq-onebot-bridge` 的 config），不要写进仓库；
+2. 配置同样写在 `~/.dsh/profiles/desktop/cordis.patch.yml`（`id: omnichannel-bridge` 的 config），不要写进仓库；
 3. 重启桌面端生效。
 
-> 手动/本地目录安装（不经市场）时注意：光有依赖还不够，**必须同时把 `dsh-qq-onebot-bridge` 加进该 profile `package.json` 的 `dsh.profile.bundles`**，加载器才会挂载它——只装依赖的话它只会出现在"已装依赖"里而不工作（本机实测）。市场安装会自动处理这一步。
+> 手动/本地目录安装（不经市场）时注意：光有依赖还不够，**必须同时把 `omnichannel-bridge` 加进该 profile `package.json` 的 `dsh.profile.bundles`**，加载器才会挂载它——只装依赖的话它只会出现在"已装依赖"里而不工作（本机实测）。市场安装会自动处理这一步。
 
 > ⚠️ **一台机器只允许一个实例托管 QQ 桥**：web 宿主与桌面端可以都装本插件，但两者抢同一个 OneBot 端口（默认 6700），只有一个能绑上——另一个会在日志里说明原因并**每 15 秒重试**，等端口释放后自动接管（不会崩溃、也不会拖住宿主启动）。**不要用"给另一个 profile 改个端口"来让两个都跑**：它们共用同一份 `cwd`（`qq-sessions.json` / `qq-memory/` / `qq-reminders.json` / 积分与统计…都在那儿），两个实例同时读写会互相覆盖，`injectDryRun:false` 时注入队列里的动作还会真的发两遍。要固定由某一个托管，正确做法是**只在一个 profile 里启用本插件**（另一个从 `dsh.profile.bundles` 里去掉），或者把 `cwd` 也分成两个不同目录。
+
+## QQ 版本：只支持 9.9.36，**不要升到 9.9.37**
+
+> **2026-11-19 实测结论**。这一段是踩过坑之后写的，请先看再装。
+
+### 一句话
+
+| QQ 版本 | 能不能注入 | 依据 |
+|---|---|---|
+| **9.9.36-53644** | ✅ **可以**（本插件按这个版本验证） | launcher 仍读 `package.json` 的 `main`，注入器伪造入口有效 |
+| **9.9.37-54395** | ❌ **不行** | launcher **硬编码** `resources\app\application.asar/app_launcher/index.js`，**完全不看 `main`**，伪造的 `qqnt.json` 被忽略 |
+| 更早（9.9.2x） | ⚠️ 未验证 | Waylay 的 profile 表停在 `3.2.27-3.2.31`，更老的可能有别的接口差异 |
+
+### 怎么确认自己是哪版
+
+```powershell
+# 1) 注册表（热更新会改这里）
+(Get-ItemProperty "HKCU:\Software\Tencent\QQNT" -Name version).version
+
+# 2) 正在用的版本目录
+Get-Content "C:\Program Files\Tencent\QQNT\versions\config.json" -Raw
+```
+
+**两个值必须一致**（`9.9.36.53644` ↔ `9.9.36-53644`）。
+
+### 已经在 9.9.37 了怎么退回去
+
+**不需要重装安装包**。这台机器本来就是 9.9.36 装的，9.9.37 是热更新上来的
+（`config.json` 里 `baseVersion` 和 `buildId` 都还是 `53644`）。
+
+要做的只有三件事：
+
+1. **把 9.9.36 的完整目录放进** `<QQNT>\versions\9.9.36-53644\`（约 1.17 GB / 1907 文件）；
+2. **改 `versions\config.json`**：`curVersion` → `9.9.36-53644`，`prevVersion` → `9.9.37-54395`；
+3. **改注册表 `HKCU\Software\Tencent\QQNT\version`** → `9.9.36.53644`（**不需要管理员**）。
+
+> 🔴 **第 3 步是关键，也是卡最久的地方。**
+> 只改 `config.json` 不改注册表，`QQNT.dll` 会在启动时**主动 `INT3`**
+> （事件日志：`APPCRASH / P4=QQNT.dll / P7=80000003 / P8=000000026b6e3a`），
+> 表现是"进程起来十几 MB 就没了"。
+> **`0x80000003` 是断点中断，不是崩溃**——它在说"这个环境自相矛盾"，不是"我崩了"。
+
+### 退回后
+
+QQ 起来后应该看到 **4-5 个进程**、主进程 100 MB 以上。
+只有 1-2 个进程且都接近 0 MB ⇒ 注入没生效，去看 `13000` 有没有监听。
+
+⚠️ **别让它又自动升回 9.9.37**：升级后症状是"插件突然不见了"。自动更新的关闭方式各版本不同，
+本仓库没有可靠做法——发现版本变了就重做上面三步。
 
 ## 从零安装（一台干净的机器）
 
@@ -149,7 +198,7 @@ dsh plugin --profile <profile> add <本目录>                # 注册进 profil
 配置写进 **profile** 的 `~/.dsh/profiles/web/cordis.patch.yml`（**不要**写进仓库根目录那份）：
 
 ```yaml
-- id: dsh-qq-onebot-bridge
+- id: omnichannel-bridge
   config:
     cwd: 'C:\Users\你\qq_chat'            # AGENT 的工作区（模型在里面跑命令）
     dataDir: 'C:\Users\你\qq_chat'        # 记忆/聊天记录/金丝雀的根目录（下面第 3 步也能选）
@@ -215,6 +264,12 @@ dsh plugin --profile <profile> add <本目录>                # 注册进 profil
 4. 需要登录时点 **「看登录二维码」**，用手机 QQ 扫码，再确认 `/api/status` 的 `logged_in=true`。
 
 > `control/启动控制台.bat` **只起控制台**（8880），不是完整启动器；完整链路用根目录那个。
+
+> ⚠️ **顺序不严格，但有因果**：Waylay 每 5 秒重连一次 `6700`，所以先起 Waylay 也不会失败——
+> 它会一直重试到桥起来。反过来说，**如果 6700 一直没监听，Waylay 永远连不上**，
+> 面板上会显示"运行中·未连接"。
+> 这时要查的是**桥插件有没有加载**（宿主起没起、`cordis.patch.yml` 里的 `id` 对不对），而不是 Waylay：
+> `~/.dsh/qqbot-bridge-diag.log` 里每次插件加载都会写一行 `bridge apply 被调用`，没有这行就是没加载。
 
 ### 5. 验证四件事（别靠"感觉它活着"）
 
@@ -282,7 +337,7 @@ profile、哪个 profile 声明了本插件、在不在 `bundles` 里、patch �
 
 ## 配置
 
-profile 的 `cordis.patch.yml` 覆盖 `id: dsh-qq-onebot-bridge` 的 config（完整示例见 `examples/cordis.patch.example.yml`）：
+profile 的 `cordis.patch.yml` 覆盖 `id: omnichannel-bridge` 的 config（完整示例见 `examples/cordis.patch.example.yml`）：
 
 > ⚠️ **别改错文件**：仓库根目录也有一个同名 `cordis.patch.yml`，那是**安装用的 bundle patch**（4 行，只有 `insert: - id: …`），**不要往里填配置**。真正要改的是 **profile 目录**里的那份，例如 `~/.dsh/profiles/web/cordis.patch.yml`（Windows：`C:\Users\<你>\.dsh\profiles\web\cordis.patch.yml`）——它在仓库外，**密钥写在那里才不会进 git**。
 
@@ -823,6 +878,76 @@ ws://127.0.0.1:6700/
   或**插件的工作目录与控制台配的不是同一个**（插件把快照写成 `<它自己的工作目录>\qq-runtime.json`；
   用控制台「启动宿主」两边就一致）。
 
+#### 控制台点「启动 Waylay」返回 ok，但 13000 一直不监听
+
+**这是 2026-11-19 花了一整天才定位的坑，如果你是照旧版 `rin-inject` 拿的 bat，大概率会撞上。**
+
+**症状**：控制台返回 `{ok: true, pid: ...}`，锁文件也写了，但 QQ 进程 0 个、13000 永远不监听、
+`rin-inject.log` 一个字节都没有。
+
+**查证**（不要靠猜，去看这两个文件）：
+
+```powershell
+# 控制台重定向的 stdout
+Get-Content "<rin-inject>\rin-launch-out.log" -Tail 20
+# 控制台重定向的 stderr
+Get-Content "<rin-inject>\rin-launch-err.log" -Raw
+```
+
+如果看到这两行中的任意一个，就是同一个病因：
+
+```
+请按任意键继续. . .                       ← bat 卡在 pause
+[i] Injector returned, exit code = -1073741510    ← 0xC000013A = 被 Ctrl+C 杀掉
+```
+
+**根因**：`rin-launch.bat` 里有**裸 `pause`**——最常见的两处是
+① 检测到僵尸 `QQ.exe` 时提示 "press any key"；② 脚本结尾。
+控制台是用 `spawn` 起的，**stdin 没有输入**，`pause` 永久等待；
+约 95 秒后控制台的进程树被 `taskkill /PID /T /F` 清掉，于是 QQ 一个字都没跑就没了。
+
+**修法**：把裸 `pause` 改成条件暂停，控制台传参数时就不暂停：
+
+```bat
+if "%~1"=="" pause
+```
+
+> 通用原则：**凡是会被自动化调用的 `.bat`，都不能有裸 `pause` / `set /p`**。
+> 想让手动双击时仍然停住看输出，就用上面这个条件写法。
+
+**附带一个卡住的场景**：启动锁 `rin-inject\.waylay-launch.json`（TTL 5 分钟）。
+控制台在"13000 没监听"时点「停止」**不会**清这个锁（它只负责杀进程），
+所以连点几次后会一直回 `上一次启动请求还没完成`。**直接删掉这个文件**即可。
+
+#### 从脚本 / 自动化里控制控制台
+
+控制台只监听 `127.0.0.1`，所有接口都要两类凭据，**缺一个就是 401**：
+
+```powershell
+$token = (Get-Content "<插件目录>\qq-control.json" -Raw | ConvertFrom-Json).token
+$h = @{
+  'x-control-token' = $token                       # 不是 Authorization: Bearer
+  'Origin'          = 'http://127.0.0.1:8880'      # 少了这个会被 403（跨站防护）
+}
+```
+
+| 接口 | 方法 | 用途 |
+|---|---|---|
+| `/api/status` | GET | **端口全景**：每行给出 `listening` / `pid` / `process` / `established` |
+| `/api/waylay` | GET | Waylay 详情：`loggedIn` / `uin` / `nickname` / `reverseClients` / `text` |
+| `/api/waylay/start` | POST | 启动 Waylay（会写启动锁） |
+| `/api/waylay/stop` | POST | 停止 Waylay（**只杀监听 13000 的那个 QQ**） |
+
+**判断"全链路通了"的最短路径**：
+
+```powershell
+$s = Invoke-RestMethod 'http://127.0.0.1:8880/api/waylay' -Headers $h
+$s.reverseClients   # >0 表示 Waylay 已经连上桥的 6700；=0 说明桥没起或端口不对
+```
+
+> 端口是 `listening` **不代表**连上了。今天实测过：6700 在听、Waylay 在跑，但 `reverseClients=0`
+> ——因为桥插件还没加载，Waylay 一直在重连。**只有 `reverseClients>0` 才算端到端。**
+
 ## 语音转文字（STT）
 
 **触发规则**（最终版）：
@@ -876,7 +1001,7 @@ ctx.qqBridge.registerToolProvider(({ agentCtx, route, key, config, workspaceRoot
 }), { name: 'my-plugin' })
 
 // ④ 拿不到 ctx 时（插件加载顺序 / 独立进程）：包导出了入口，别再写 file:// 绝对路径
-import { getExtensionApi } from 'dsh-qq-onebot-bridge/extension'
+import { getExtensionApi } from 'omnichannel-bridge/extension'
 const api = getExtensionApi()
 
 // ⑤ 桥实例标识：宿主重建桥（重启 / 热重载 / 面板点开关）后这个值会变，
